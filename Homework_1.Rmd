@@ -1,0 +1,32 @@
+---
+title: "Homework_1"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. We are asked to define supervised and unsupervised learning, and to state the differences between them. As stated in the lecture, supervised learning is when we use the actual data 'Y' as the supervisor. That is, we have to give the model the observed output and input, so that it can learn what is the correct output (and what is not). Unsupervised learning is when the learning for the model occurs without giving the machine any indication on what answers are correct or not.
+\\
+\\As can be inferred from above, the main difference between the two learning methods is that supervised learning uses input and output data that is classified, while unsupervised learning only uses input data that is classified. Another difference between the two learning methods is the types of algorithms that are used. As we learned in lecture, supervised learning consists of algorithms such as regression and trees, while unsupervised learning consists of clustering algorithms. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
