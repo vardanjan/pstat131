@@ -8,11 +8,40 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-1. We are asked to define supervised and unsupervised learning, and to state the differences between them. As stated in the lecture, supervised learning is when we use the actual data 'Y' as the supervisor. That is, we have to give the model the observed output and input, so that it can learn what is the correct output (and what is not). Unsupervised learning is when the learning for the model occurs without giving the machine any indication on what answers are correct or not.
+\section*{Machine Learning Main Ideas Questions}
+1) We are asked to define supervised and unsupervised learning, and to state the differences between them. As stated in the lecture, supervised learning is when we use the "actual data 'Y' as the supervisor". That is, we have to give the model the observed output and input, so that it can learn what is the correct output (and what is not), and adjust it's learning process based on that information. Unsupervised learning is when the learning for the model occurs without giving the machine any indication on what answers are correct or not.
 \\
 \\As can be inferred from above, the main difference between the two learning methods is that supervised learning uses input and output data that is classified, while unsupervised learning only uses input data that is classified. Another difference between the two learning methods is the types of algorithms that are used. As we learned in lecture, supervised learning consists of algorithms such as regression and trees, while unsupervised learning consists of clustering algorithms. 
-
+\\
+\\2) We are asked to explain the difference between a regression model and a classification model, specifically in the context of machine learning. As stated in the lecture, a regression model has the response variables take on "quantiative, numerical values" (such as temperature, weight, etc). In a classification model, the response variables take on "qualatitive, categorical values" (such as color, car type, etc).
+\\
+\\3) We are asked to name two commonly used metrics for regression ML and classification ML problems each. We have not learned this yet, so I am not answering the question yet.
+\\
+\\4) We are asked to give a brief description of descriptive, inferential, and predictive models. We do this as follows:
+\\
+\\Descriptive models: In descriptive models, our goal is to choose the top model that can effectively visualize a pattern seen in our data. For example, as stated in lecture, we may consider "using a line on a scatterplot".
+\\
+\\Inferential models: Inferential models have a few goals in mind. (Most of the goals listed here are rephrased from Slide 39 of the Day 1 Slides). One goal is to determine which features, if any, are the most important ones. Another goal for this type of model is to be able to determine the link between the predictors of a model, and it's outcomes. Yet another goal is to test theories about the model, and determine if these theories are indeed true or not. Finally, it could possibly be used to determine any causal claims.
+\\
+\\Predictive models: As stated in lecture, hypothesis tests are not a main focus of these types of models. Additionally, the goal with predictive models is to determine which combination of features would work most effectively with the fit. Finally, as stated in the lecture, it's "aim is to predict Y with minimum reducible error".
+\\
+\\5.1) We are asked to define the mechanistic and empirically driven model types, and describe how they differ and how they are similar. 
+\\
+\\As stated in the lecture, mechanistic model types are parametric, and "assume a parametric form for $f$". In addition, they will not be equal to the actual value of $f$, which is not known. Additionally, by adding more parameters to the model, the model becomes "more flexible" (as stated in the lecture). Finally, we could overfit the model if we accidentally add a larger-than-necessary amount of parameters.
+\\
+\\On the other hand, empirically driven (non-parametric) models have absolutely no prior assumptions regarding the function $f$. However, as stated in lecture, they do "require a larger number of observations" in order to work. By their initial construction, they are more flexible than parametric models, but also suffer from overfitting.
+\\
+\\The similarities of both of the models is that they both suffer from overfitting, and can both be made flexible. The differences are as follows: in mechanistic models, there is an assumption made for the function $f$, but for the non-parametric model, there is no assumption made about $f$. Additionally, when looking at their default constructions, the non-parametric model is "much more flexible" (as stated ni lecture) than the mechanistic model.
+\\
+\\5.2) We are asked to decide if mechanistic models or emprically driven models are easier to understand, and to explain our choice. I personally think that mechanistic models are easier to under, because we are making an implicit assumption about $f$ and what it's form looks like. Even if it is not the exact true form of $f$, it still lets us perform different types of analysis that I (personally) find easier to understand than those of empirically driven models.
+\\
+\\5.3) We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. We have not learned this yet, so I am not answering the question yet.
+\\
+\\6) I would classify the first question as predictive, and the second question as inferential. 
+\\
+\\The reason that I would classify the first question as predictive is because of the fact that they are trying to "predict" how likely a voter would vote in favor of the candidate based on the voter's profile/data. In other words, they want to use the voter's profile/data as predictors to determine if that voter would then vote in favor of the candidate.
+\\
+\\The reason that I would classify the second question as inferential is because they are trying to infer if the voter would have a change of support, based on an interaction with the candidate. 
 
 
 
