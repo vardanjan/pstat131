@@ -3,6 +3,8 @@ title: "Homework_1"
 author: "Vardan Martirosyan"
 date: "`r Sys.Date()`"
 output: pdf_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -45,6 +47,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \newpage
 \section*{Exploratory Data Analysis Exercises}
+First, we call the library 'ggplot2' to be able to use it, along with the other libraries we need.
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(tidymodels)
+library(ISLR)
+```
+
+
+
+
 1) We are asked to create a histogram of the variable 'hwy' of the 'mpg' dataset. Below is the histogram.
 ```{r}
 ggplot(data = mpg, aes(x = hwy)) + geom_histogram(color = 'black', fill = 'blue')
@@ -57,18 +70,60 @@ ggplot(mpg, aes(x=hwy, y=cty)) + geom_point()
 ```
 We are asked if there is a relationship between hwy and cty. Looking at the scatterplot, we state that there is indeed a relationship between hwy and cty: namely, a positive, linear relationship. This tells us that as the miles per gallon for the highway mileage increases, so does the miles per gallon for the city mileage. 
 \\
-\\3) We are asked to make a bar plot of manufacturer, flip it so that the manufacturers are on the y-axis, and to order the bars by height. Below is the bar plot that is requested:
+\\3) We are asked to make a bar plot of manufacturer, flip it so that the manufacturers are on the y-axis, and to order the bars by height. To do this, we first need to call the library 'forcats' from tidyverse that will let us re-order the bars in the bar graph.
 ```{r}
-ggplot(mpg, aes(x = manufacturer, y = model)) + geom_bar(stat = "identity", fill = "blue")
+library(forcats)
+```
+Then, we can create the bar plot as requested:
+```{r}
+ggplot(mpg, aes(x = manufacturer)) + geom_bar(stat = "count") + coord_flip()
+```
+
+
+```{r}
+mpg %>%
+  arrange(manufacturer) %>%
+  mutate(name = factor(manufacturer, levels = manufacturer)) %>% ggplot (aes(x = manufacturer, y = model)) + geom_bar(stat = "identity") + coord_flip()
+  
+```
+
+
+```{r}
+
 ```
 
 
 
 
+4) We are asked to make a boxplot of hwy, grouped by cyl. We do this below as follows:
+```{r}
+ggplot(mpg, aes(x = factor(cyl), y = hwy, fill = "blue")) + geom_boxplot()
+```
+We are then asked if we see a pattern. Looking at this boxplot, I do indeed see a pattern. As the number of cylinder's increases, the miles per gallon for the highway mileage of cars decreases in a linear fashion. 
 
 
 
 
+
+
+5) We are asked to use corrplot() to make a lower triangle correlation matrix of the mpg dataset. We first call the corrplot() package.
+```{r}
+library(corrplot)
+```
+We then try to write the code to obtain a lower triangle correlation matrix of the mpg dataset as follows. Note that below, when we try and run this line of code, we get thrown an error.
+```{r}
+corrplot(mpg, method = 'number', type = 'lower')
+```
+In particular, the error is because 'manufacturer' is type 'character'. As suggested by Hanmo Li in office hours, to resolve this issue, we need to remove 'manufacturer' from the dataset.
+```{r}
+new_mpg <- mpg
+new_mpg$manufacturer <- NULL
+new_mpg$model <- NULL
+```
+Then, we can use corrplot() as desired:
+```{r}
+corrplot(new_mpg, type = 'lower')
+```
 
 
 
