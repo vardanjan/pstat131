@@ -43,7 +43,24 @@ knitr::opts_chunk$set(echo = TRUE)
 \\
 \\The reason that I would classify the second question as inferential is because they are trying to infer if the voter would have a change of support, based on an interaction with the candidate. 
 
-
+\newpage
+\section*{Exploratory Data Analysis Exercises}
+1) We are asked to create a histogram of the variable 'hwy' of the 'mpg' dataset. Below is the histogram.
+```{r}
+ggplot(data = mpg, aes(x = hwy)) + geom_histogram(color = 'black', fill = 'blue')
+```
+We are then asked to describe what we see/learn. Looking at the histogram, it seems to be bimodal, with two peaks happening at hwy = 17 and hwy = 27. In addition, most of the other values for this variable appear to be crowding around these two peaks, with some outliers on both ends (but most of the outliers primarily appearing on the higher end). From this, we can learn that most of the cars in the dataset seem to have an MPG of around 15-20 mpg or 25-30 mpg for their miles per gallon for their highway mileage. 
+\\
+\\2) We are now asked to create a scatterplot, putting 'hwy' on the x-axis and 'cty' on the y-axis. Below is the scatterplot:
+```{r}
+ggplot(mpg, aes(x=hwy, y=cty)) + geom_point()
+```
+We are asked if there is a relationship between hwy and cty. Looking at the scatterplot, we state that there is indeed a relationship between hwy and cty: namely, a positive, linear relationship. This tells us that as the miles per gallon for the highway mileage increases, so does the miles per gallon for the city mileage. 
+\\
+\\3) We are asked to make a bar plot of manufacturer, flip it so that the manufacturers are on the y-axis, and to order the bars by height. Below is the bar plot that is requested:
+```{r}
+ggplot(mpg, aes(x = manufacturer, y = model)) + geom_bar(stat = "identity", fill = "blue")
+```
 
 
 
