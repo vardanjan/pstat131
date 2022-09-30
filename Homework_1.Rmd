@@ -49,9 +49,9 @@ We are asked to describe how bias-variance tradeoff is related to the use of mec
 \subsection*{Question 6}
 I would classify the first question as predictive, and the second question as inferential. 
 
-The reason that I would classify the first question as predictive is because of the fact that they are trying to "predict" how likely a voter would vote in favor of the candidate based on the voter's profile/data. In other words, they want to use the voter's profile/data as predictors to determine if that voter would then vote in favor of the candidate.
+The reason that I would classify the first question as predictive is because of the fact that they are trying to "predict" how likely a voter would vote in favor of the candidate based on the voter's profile/data. In other words, they want to use the voter's profile/data as predictors to determine how likely the physical action would be of the voter actually voting for the candidate.
 
-The reason that I would classify the second question as inferential is because they are trying to infer if the voter would have a change of support, based on an interaction with the candidate. 
+The reason that I would classify the second question as inferential is because they are trying to infer the likliehood of the voter's change of support, based on an interaction with the candidate. Since the voter's change of support isn't something that can be easily measured (ie, compared to someone going and physically voting), I'd argue that this event is more likely to be inferential than predictive. 
 
 \newpage
 \section*{Exploratory Data Analysis Exercises}
@@ -91,7 +91,7 @@ We are then asked which manufacturer produced the most cars, and which one produ
 \subsection*{Question 4}
 We are asked to make a boxplot of hwy, grouped by cyl. We do this below as follows:
 ```{r}
-ggplot(mpg, aes(x = factor(cyl), y = hwy, fill = "blue")) + geom_boxplot()
+ggplot(mpg, aes(x = factor(cyl), y = hwy)) + geom_boxplot()
 ```
 We are then asked if we see a pattern. Looking at this boxplot, I do indeed see a pattern. As the number of cylinder's increases, the miles per gallon for the highway mileage of cars decreases in a linear fashion. 
 
@@ -115,7 +115,12 @@ Then, we can use corrplot() as desired:
 ```{r}
 corrplot(cor(new_mpg), method = 'number', type = 'lower')
 ```
-We are asked which variables are positively or negatively correlated with each other. We first note that the 'cty' and 'hwy' variables are strongly positively correlated with one another. This one makes sense to me, since if the highway mileage for a car was high, then it should mean that the city mileage for the car is also similarly high. In other words, it doesn't really make sense for a car to have a high highway average mpg, but suddenly not have such a high city average mpg. There are two strong negative relationships: the variables 'cty' and 'cyl', and 'hwy' and 'cyl'. This relationship was a bit surprising to me, since I didn't expect the number of cylinder's in a car to drastically affect the performance of the car's average mpg on the highway or the city.
+We are asked which variables are positively or negatively correlated with each other. Additionally, we are asked to state if these relationships make sense to us, or surprise us. We first note that the 'cty' and 'hwy' variables are strongly positively correlated with one another. This one makes sense to me, since if the highway mileage for a car was high, then it should mean that the city mileage for the car is also similarly high. In other words, it doesn't really make sense for a car to have a high highway average mpg, but suddenly not have such a high city average mpg. Personally, I think it would be very strange if a car had a high highway miles per gallon (relative to other cars), then suddenly had a low city miles per gallon (relative to other cars). This is why it makes sense to me that the 'cty' and 'hwy' variables are strongly positively correlated with one another. 
+
+There are two strong negative relationships: the variables 'cty' and 'cyl', and 'hwy' and 'cyl'. This relationship was initially a bit surprising to me, since intuitively, I didn't expect the number of cylinder's in a car to drastically affect the performance of the car's average mpg on the highway or the city. However, after looking back at Exercise 4 in this section, this negative correlation makes sense, since we saw in that Exercise that as the number of cylinder's increased, the car's miles per gallon on the highway decreased. Other than this initial surprise, there are no other positively/negatively correlated variables that made sense to me, or surprised me. (Based on what the question asked, I don't think we were meant to talk about the 'Year' correlations with the other variables, since it's relationships with the other variables are not that strong or negative, and seem pretty insignifigant).
+
+
+#QUESTIONS TO ASK IN OH: 3, 5.3, 6, 5.
 
 
 
