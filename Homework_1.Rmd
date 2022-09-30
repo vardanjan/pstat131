@@ -27,7 +27,7 @@ We are asked to give a brief description of descriptive, inferential, and predic
 
 Descriptive models: In descriptive models, our goal is to choose the top model that can effectively visualize a pattern seen in our data. For example, as stated in lecture, we may consider "using a line on a scatterplot".
 
-Inferential models: Inferential models have a few goals in mind. (Most of the goals listed here are rephrased from Slide 39 of the Day 1 Slides). One goal is to determine which features, if any, are the most important ones. Another goal for this type of model is to be able to determine the link between the predictors of a model, and it's outcomes. Yet another goal is to test theories about the model, and determine if these theories are indeed true or not. Finally, it could possibly be used to determine any causal claims.
+Inferential models: Inferential models have a few goals in mind. (Most of the goals listed here are rephrased from Slide 39 of the Day 1 Slides). One goal is to determine which features in a model, if any, are the most important ones. Another goal for this type of model is to be able to determine the link between the predictors of a model, and it's outcomes. Yet another goal is to test theories about the model, and determine if these theories are indeed true or not. Finally, it could possibly be used to determine any causal claims.
 
 Predictive models: As stated in lecture, hypothesis tests are not a main focus of these types of models. Additionally, the goal with predictive models is to determine which combination of features would work most effectively with the fit. Finally, as stated in the lecture, it's "aim is to predict Y with minimum reducible error".
 
@@ -38,13 +38,13 @@ As stated in the lecture, mechanistic model types are parametric, and "assume a 
 
 On the other hand, empirically driven (non-parametric) models have absolutely no prior assumptions regarding the function $f$. However, as stated in lecture, they do "require a larger number of observations" in order to work. By their initial construction, they are more flexible than parametric models, but also suffer from overfitting.
 
-The similarities of both of the models is that they both suffer from overfitting, and can both be made flexible. The differences are as follows: in mechanistic models, there is an assumption made for the function $f$, but for the non-parametric model, there is no assumption made about $f$. Additionally, when looking at their default constructions, the non-parametric model is "much more flexible" (as stated ni lecture) than the mechanistic model.
+A similarity of both of the models is that they both have the ability to suffer from overfitting. The differences are as follows: in mechanistic models, there is an assumption made for the function $f$, but for the non-parametric model, there is no assumption made about $f$. Additionally, when looking at their default constructions, the non-parametric model is "much more flexible" (as stated in lecture) than the mechanistic model.
 
 \subsection*{Question 5.2}
 We are asked to decide if mechanistic models or emprically driven models are easier to understand, and to explain our choice. I personally think that mechanistic models are easier to under, because we are making an implicit assumption about $f$ and what it's form looks like. Even if it is not the exact true form of $f$, it still lets us perform different types of analysis that I (personally) find easier to understand than those of empirically driven models.
 
 \subsection*{Question 5.3}
-We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. As we learned in class, as the complexity/flexibility of the model increases, it has a lower bias and a higher variance. As the complexity/flexibility of a model decreases, it has a higher bias, but a lower variance. In the context of mechanistic and empirically driven models, we recall from our answer to 5.1 that empirically driven models were more flexible than mechanistic ones. Thus, emprically driven models are more likely to have a higher variance, but a lower bias, than mechanisitic ones. So, if we were looking to choose a model that had a low bias, but a high variance, we might choose to pick an empirical model over a mechanistic one. This is how the bias-variance tradeoff is related to the use of mechanistic or empirically driven models. 
+We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. As we learned in class, as the complexity/flexibility of the model increases, it has a lower bias and a higher variance. As the complexity/flexibility of a model decreases, it has a higher bias, but a lower variance. In the context of mechanistic and empirically driven models, we recall from our answer to 5.1 that empirically driven models were inherently more flexible than mechanistic ones. Thus, emprically driven models are more likely to have a higher variance, but a lower bias, than mechanisitic ones. So, if we were looking to choose a model that had a low bias, but a high variance, we might choose to pick an empirical model over a mechanistic one. This is how the bias-variance tradeoff is related to the use of mechanistic or empirically driven models. Depending on what types of tradeoffs we would be willing to give, in regards to the bias and variance, we can then choose to use a mechanistic or an empirically-driven model to accomplish our goals.
 
 \subsection*{Question 6}
 I would classify the first question as predictive, and the second question as inferential. 
@@ -86,7 +86,6 @@ Then, we can create the bar plot as requested, using the 'fct_infreq' function:
 ```{r}
 ggplot(mpg, aes(x = fct_infreq(manufacturer))) + geom_bar(stat = "count") + coord_flip()
 ```
-
 We are then asked which manufacturer produced the most cars, and which one produced the least. From the bar plot above, we see that the one that produced the most is Dodge, and the one that produced the least is Lincoln.
 
 \subsection*{Question 4}
