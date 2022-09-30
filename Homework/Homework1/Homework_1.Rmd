@@ -20,7 +20,7 @@ As can be inferred from above, the main difference between the two learning meth
 We are asked to explain the difference between a regression model and a classification model, specifically in the context of machine learning. As stated in the lecture, a regression model has the response variables take on "quantiative, numerical values" (such as temperature, weight, etc). In a classification model, the response variables take on "qualatitive, categorical values" (such as color, car type, etc).
 
 \subsection*{Question 3}
-We are asked to name two commonly used metrics for regression ML and classification ML problems each. For Regression Machine Learning, two commonly used metrics are the training Mean Square Error and the Test Mean Square Error. For Classification Machine Learning, two commonly used metrics are the training error rate and the test error rate.
+We are asked to name two commonly used metrics for regression ML and classification ML problems each. For Regression Machine Learning, two commonly used metrics are the Mean Square Error and the Root Mean Square Error. For Classification Machine Learning, two commonly used metrics are the F1 score, and the accuracy rate.
 
 \subsection*{Question 4}
 We are asked to give a brief description of descriptive, inferential, and predictive models. We do this as follows:
@@ -107,7 +107,7 @@ new_mpg$manufacturer <- NULL
 new_mpg$model <- NULL
 new_mpg$trans <- NULL
 new_mpg$drv <- NULL
-new_mpg$displ <- NULL
+#new_mpg$displ <- NULL
 new_mpg$fl <- NULL
 new_mpg$class <- NULL
 ```
@@ -123,6 +123,7 @@ There are two strong negative relationships: the variables 'cty' and 'cyl', and 
 #QUESTIONS TO ASK IN OH: 3, 5.3, 6, 5.
 
 
+#FIX TEXT 6 ANALYSIS, 
 
 
 
