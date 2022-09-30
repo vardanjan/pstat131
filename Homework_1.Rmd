@@ -79,13 +79,6 @@ Then, we can create the bar plot as requested, using the 'fct_infreq' function:
 ggplot(mpg, aes(x = fct_infreq(manufacturer))) + geom_bar(stat = "count") + coord_flip()
 ```
 
-
-```{r}
-mpg %>%
-  arrange(manufacturer) %>%
-  mutate(name = factor(manufacturer, levels = manufacturer)) %>% ggplot (aes(x = manufacturer, y = model)) + geom_bar(stat = "identity") + coord_flip()
-  
-```
 We are then asked which manufacturer produced the most cars, and which one produced the least. From the bar plot above, we see that the one that produced the most is Dodge, and the one that produced the least is Lincoln.
 
 
@@ -106,11 +99,7 @@ We are then asked if we see a pattern. Looking at this boxplot, I do indeed see 
 ```{r}
 library(corrplot)
 ```
-We then try to write the code to obtain a lower triangle correlation matrix of the mpg dataset as follows. Note that below, when we try and run this line of code, we get thrown an error.
-```{r}
-corrplot(mpg, method = 'number', type = 'lower')
-```
-In particular, the error is because 'manufacturer' is type 'character'. As suggested by Hanmo Li in office hours, to resolve this issue, we need to remove not only 'manufacturer' from the dataset, but all non-numeric variables. We do this as follows.
+We then try to write the code to obtain a lower triangle correlation matrix of the mpg dataset as follows. However, when we try and run this line of code, we get thrown an error. In particular, the error is because 'manufacturer' is type 'character'. As suggested by Hanmo Li in office hours, to resolve this issue, we need to remove not only 'manufacturer' from the dataset, but all non-numeric variables. We do this as follows.
 ```{r}
 new_mpg <- mpg
 new_mpg$manufacturer <- NULL
