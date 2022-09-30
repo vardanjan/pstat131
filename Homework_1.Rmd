@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \\
 \\2) We are asked to explain the difference between a regression model and a classification model, specifically in the context of machine learning. As stated in the lecture, a regression model has the response variables take on "quantiative, numerical values" (such as temperature, weight, etc). In a classification model, the response variables take on "qualatitive, categorical values" (such as color, car type, etc).
 \\
-\\3) We are asked to name two commonly used metrics for regression ML and classification ML problems each. We have not learned this yet, so I am not answering the question yet.
+\\3) We are asked to name two commonly used metrics for regression ML and classification ML problems each. For Regression Machine Learning, two commonly used metrics are the training Mean Square Error and the Test Mean Square Error. For Classification Machine Learning, two commonly used metrics are the training error rate and the test error rate.
 \\
 \\4) We are asked to give a brief description of descriptive, inferential, and predictive models. We do this as follows:
 \\
@@ -37,7 +37,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \\
 \\5.2) We are asked to decide if mechanistic models or emprically driven models are easier to understand, and to explain our choice. I personally think that mechanistic models are easier to under, because we are making an implicit assumption about $f$ and what it's form looks like. Even if it is not the exact true form of $f$, it still lets us perform different types of analysis that I (personally) find easier to understand than those of empirically driven models.
 \\
-\\5.3) We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. We have not learned this yet, so I am not answering the question yet.
+\\5.3) We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. As we learned in class, as the complexity/flexibility of the model increases, it has a lower bias and a higher variance. As the complexity/flexibility of a model decreases, it has a higher bias, but a lower variance. In the context of mechanistic and empirically driven models, we recall from our answer to 5.1 that empirically driven models were more flexible than mechanistic ones. Thus, emprically driven models are more likely to have a higher variance, but a lower bias, than mechanisitic ones. So, if we were looking to choose a model that had a low bias, but a high variance, we might choose to pick an empirical model over a mechanistic one. This is how the bias-variance tradeoff is related to the use of mechanistic or empirically driven models. 
 \\
 \\6) I would classify the first question as predictive, and the second question as inferential. 
 \\
@@ -74,9 +74,9 @@ We are asked if there is a relationship between hwy and cty. Looking at the scat
 ```{r}
 library(forcats)
 ```
-Then, we can create the bar plot as requested:
+Then, we can create the bar plot as requested, using the 'fct_infreq' function:
 ```{r}
-ggplot(mpg, aes(x = manufacturer)) + geom_bar(stat = "count") + coord_flip()
+ggplot(mpg, aes(x = fct_infreq(manufacturer))) + geom_bar(stat = "count") + coord_flip()
 ```
 
 
@@ -86,11 +86,7 @@ mpg %>%
   mutate(name = factor(manufacturer, levels = manufacturer)) %>% ggplot (aes(x = manufacturer, y = model)) + geom_bar(stat = "identity") + coord_flip()
   
 ```
-
-
-```{r}
-
-```
+We are then asked which manufacturer produced the most cars, and which one produced the least. From the bar plot above, we see that the one that produced the most is Dodge, and the one that produced the least is Lincoln.
 
 
 
@@ -114,18 +110,22 @@ We then try to write the code to obtain a lower triangle correlation matrix of t
 ```{r}
 corrplot(mpg, method = 'number', type = 'lower')
 ```
-In particular, the error is because 'manufacturer' is type 'character'. As suggested by Hanmo Li in office hours, to resolve this issue, we need to remove 'manufacturer' from the dataset.
+In particular, the error is because 'manufacturer' is type 'character'. As suggested by Hanmo Li in office hours, to resolve this issue, we need to remove not only 'manufacturer' from the dataset, but all non-numeric variables. We do this as follows.
 ```{r}
 new_mpg <- mpg
 new_mpg$manufacturer <- NULL
 new_mpg$model <- NULL
+new_mpg$trans <- NULL
+new_mpg$drv <- NULL
+new_mpg$displ <- NULL
+new_mpg$fl <- NULL
+new_mpg$class <- NULL
 ```
 Then, we can use corrplot() as desired:
 ```{r}
-corrplot(new_mpg, type = 'lower')
+corrplot(cor(new_mpg), method = 'number', type = 'lower')
 ```
-
-
+We are asked which variables are positively or negatively correlated with each other. We first note that the 'cty' and 'hwy' variables are strongly positively correlated with one another. This one makes sense to me, since if the highway mileage for a car was high, then it should mean that the city mileage for the car is also similarly high. In other words, it doesn't really make sense for a car to have a high highway average mpg, but suddenly not have such a high city average mpg. There are two strong negative relationships: the variables 'cty' and 'cyl', and 'hwy' and 'cyl'. This relationship was a bit surprising to me, since I didn't expect the number of cylinder's in a car to drastically affect the performance of the car's average mpg on the highway or the city.
 
 
 
