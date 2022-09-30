@@ -11,39 +11,47 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 \section*{Machine Learning Main Ideas Questions}
-1) We are asked to define supervised and unsupervised learning, and to state the differences between them. As stated in the lecture, supervised learning is when we use the "actual data 'Y' as the supervisor". That is, we have to give the model the observed output and input, so that it can learn what is the correct output (and what is not), and adjust it's learning process based on that information. Unsupervised learning is when the learning for the model occurs without giving the machine any indication on what answers are correct or not.
-\\
-\\As can be inferred from above, the main difference between the two learning methods is that supervised learning uses input and output data that is classified, while unsupervised learning only uses input data that is classified. Another difference between the two learning methods is the types of algorithms that are used. As we learned in lecture, supervised learning consists of algorithms such as regression and trees, while unsupervised learning consists of clustering algorithms. 
-\\
-\\2) We are asked to explain the difference between a regression model and a classification model, specifically in the context of machine learning. As stated in the lecture, a regression model has the response variables take on "quantiative, numerical values" (such as temperature, weight, etc). In a classification model, the response variables take on "qualatitive, categorical values" (such as color, car type, etc).
-\\
-\\3) We are asked to name two commonly used metrics for regression ML and classification ML problems each. For Regression Machine Learning, two commonly used metrics are the training Mean Square Error and the Test Mean Square Error. For Classification Machine Learning, two commonly used metrics are the training error rate and the test error rate.
-\\
-\\4) We are asked to give a brief description of descriptive, inferential, and predictive models. We do this as follows:
-\\
-\\Descriptive models: In descriptive models, our goal is to choose the top model that can effectively visualize a pattern seen in our data. For example, as stated in lecture, we may consider "using a line on a scatterplot".
-\\
-\\Inferential models: Inferential models have a few goals in mind. (Most of the goals listed here are rephrased from Slide 39 of the Day 1 Slides). One goal is to determine which features, if any, are the most important ones. Another goal for this type of model is to be able to determine the link between the predictors of a model, and it's outcomes. Yet another goal is to test theories about the model, and determine if these theories are indeed true or not. Finally, it could possibly be used to determine any causal claims.
-\\
-\\Predictive models: As stated in lecture, hypothesis tests are not a main focus of these types of models. Additionally, the goal with predictive models is to determine which combination of features would work most effectively with the fit. Finally, as stated in the lecture, it's "aim is to predict Y with minimum reducible error".
-\\
-\\5.1) We are asked to define the mechanistic and empirically driven model types, and describe how they differ and how they are similar. 
-\\
-\\As stated in the lecture, mechanistic model types are parametric, and "assume a parametric form for $f$". In addition, they will not be equal to the actual value of $f$, which is not known. Additionally, by adding more parameters to the model, the model becomes "more flexible" (as stated in the lecture). Finally, we could overfit the model if we accidentally add a larger-than-necessary amount of parameters.
-\\
-\\On the other hand, empirically driven (non-parametric) models have absolutely no prior assumptions regarding the function $f$. However, as stated in lecture, they do "require a larger number of observations" in order to work. By their initial construction, they are more flexible than parametric models, but also suffer from overfitting.
-\\
-\\The similarities of both of the models is that they both suffer from overfitting, and can both be made flexible. The differences are as follows: in mechanistic models, there is an assumption made for the function $f$, but for the non-parametric model, there is no assumption made about $f$. Additionally, when looking at their default constructions, the non-parametric model is "much more flexible" (as stated ni lecture) than the mechanistic model.
-\\
-\\5.2) We are asked to decide if mechanistic models or emprically driven models are easier to understand, and to explain our choice. I personally think that mechanistic models are easier to under, because we are making an implicit assumption about $f$ and what it's form looks like. Even if it is not the exact true form of $f$, it still lets us perform different types of analysis that I (personally) find easier to understand than those of empirically driven models.
-\\
-\\5.3) We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. As we learned in class, as the complexity/flexibility of the model increases, it has a lower bias and a higher variance. As the complexity/flexibility of a model decreases, it has a higher bias, but a lower variance. In the context of mechanistic and empirically driven models, we recall from our answer to 5.1 that empirically driven models were more flexible than mechanistic ones. Thus, emprically driven models are more likely to have a higher variance, but a lower bias, than mechanisitic ones. So, if we were looking to choose a model that had a low bias, but a high variance, we might choose to pick an empirical model over a mechanistic one. This is how the bias-variance tradeoff is related to the use of mechanistic or empirically driven models. 
-\\
-\\6) I would classify the first question as predictive, and the second question as inferential. 
-\\
-\\The reason that I would classify the first question as predictive is because of the fact that they are trying to "predict" how likely a voter would vote in favor of the candidate based on the voter's profile/data. In other words, they want to use the voter's profile/data as predictors to determine if that voter would then vote in favor of the candidate.
-\\
-\\The reason that I would classify the second question as inferential is because they are trying to infer if the voter would have a change of support, based on an interaction with the candidate. 
+\subsection*{Question 1}
+We are asked to define supervised and unsupervised learning, and to state the differences between them. As stated in the lecture, supervised learning is when we use the "actual data 'Y' as the supervisor". That is, we have to give the model the observed output and input, so that it can learn what is the correct output (and what is not), and adjust it's learning process based on that information. Unsupervised learning is when the learning for the model occurs without giving the machine any indication on what answers are correct or not.
+
+As can be inferred from above, the main difference between the two learning methods is that supervised learning uses input and output data that is classified, while unsupervised learning only uses input data that is classified. Another difference between the two learning methods is the types of algorithms that are used. As we learned in lecture, supervised learning consists of algorithms such as regression and trees, while unsupervised learning consists of clustering algorithms. 
+
+\subsection*{Question 2}
+We are asked to explain the difference between a regression model and a classification model, specifically in the context of machine learning. As stated in the lecture, a regression model has the response variables take on "quantiative, numerical values" (such as temperature, weight, etc). In a classification model, the response variables take on "qualatitive, categorical values" (such as color, car type, etc).
+
+\subsection*{Question 3}
+We are asked to name two commonly used metrics for regression ML and classification ML problems each. For Regression Machine Learning, two commonly used metrics are the training Mean Square Error and the Test Mean Square Error. For Classification Machine Learning, two commonly used metrics are the training error rate and the test error rate.
+
+\subsection*{Question 4}
+We are asked to give a brief description of descriptive, inferential, and predictive models. We do this as follows:
+
+Descriptive models: In descriptive models, our goal is to choose the top model that can effectively visualize a pattern seen in our data. For example, as stated in lecture, we may consider "using a line on a scatterplot".
+
+Inferential models: Inferential models have a few goals in mind. (Most of the goals listed here are rephrased from Slide 39 of the Day 1 Slides). One goal is to determine which features, if any, are the most important ones. Another goal for this type of model is to be able to determine the link between the predictors of a model, and it's outcomes. Yet another goal is to test theories about the model, and determine if these theories are indeed true or not. Finally, it could possibly be used to determine any causal claims.
+
+Predictive models: As stated in lecture, hypothesis tests are not a main focus of these types of models. Additionally, the goal with predictive models is to determine which combination of features would work most effectively with the fit. Finally, as stated in the lecture, it's "aim is to predict Y with minimum reducible error".
+
+\subsection*{Question 5.1}
+We are asked to define the mechanistic and empirically driven model types, and describe how they differ and how they are similar. 
+
+As stated in the lecture, mechanistic model types are parametric, and "assume a parametric form for $f$". In addition, they will not be equal to the actual value of $f$, which is not known. Additionally, by adding more parameters to the model, the model becomes "more flexible" (as stated in the lecture). Finally, we could overfit the model if we accidentally add a larger-than-necessary amount of parameters.
+
+On the other hand, empirically driven (non-parametric) models have absolutely no prior assumptions regarding the function $f$. However, as stated in lecture, they do "require a larger number of observations" in order to work. By their initial construction, they are more flexible than parametric models, but also suffer from overfitting.
+
+The similarities of both of the models is that they both suffer from overfitting, and can both be made flexible. The differences are as follows: in mechanistic models, there is an assumption made for the function $f$, but for the non-parametric model, there is no assumption made about $f$. Additionally, when looking at their default constructions, the non-parametric model is "much more flexible" (as stated ni lecture) than the mechanistic model.
+
+\subsection*{Question 5.2}
+We are asked to decide if mechanistic models or emprically driven models are easier to understand, and to explain our choice. I personally think that mechanistic models are easier to under, because we are making an implicit assumption about $f$ and what it's form looks like. Even if it is not the exact true form of $f$, it still lets us perform different types of analysis that I (personally) find easier to understand than those of empirically driven models.
+
+\subsection*{Question 5.3}
+We are asked to describe how bias-variance tradeoff is related to the use of mechanistic or empirically-driven models. As we learned in class, as the complexity/flexibility of the model increases, it has a lower bias and a higher variance. As the complexity/flexibility of a model decreases, it has a higher bias, but a lower variance. In the context of mechanistic and empirically driven models, we recall from our answer to 5.1 that empirically driven models were more flexible than mechanistic ones. Thus, emprically driven models are more likely to have a higher variance, but a lower bias, than mechanisitic ones. So, if we were looking to choose a model that had a low bias, but a high variance, we might choose to pick an empirical model over a mechanistic one. This is how the bias-variance tradeoff is related to the use of mechanistic or empirically driven models. 
+
+\subsection*{Question 6}
+I would classify the first question as predictive, and the second question as inferential. 
+
+The reason that I would classify the first question as predictive is because of the fact that they are trying to "predict" how likely a voter would vote in favor of the candidate based on the voter's profile/data. In other words, they want to use the voter's profile/data as predictors to determine if that voter would then vote in favor of the candidate.
+
+The reason that I would classify the second question as inferential is because they are trying to infer if the voter would have a change of support, based on an interaction with the candidate. 
 
 \newpage
 \section*{Exploratory Data Analysis Exercises}
@@ -55,22 +63,22 @@ library(tidymodels)
 library(ISLR)
 ```
 
-
-
-
-1) We are asked to create a histogram of the variable 'hwy' of the 'mpg' dataset. Below is the histogram.
+\subsection*{Question 1}
+We are asked to create a histogram of the variable 'hwy' of the 'mpg' dataset. Below is the histogram.
 ```{r}
 ggplot(data = mpg, aes(x = hwy)) + geom_histogram(color = 'black', fill = 'blue')
 ```
 We are then asked to describe what we see/learn. Looking at the histogram, it seems to be bimodal, with two peaks happening at hwy = 17 and hwy = 27. In addition, most of the other values for this variable appear to be crowding around these two peaks, with some outliers on both ends (but most of the outliers primarily appearing on the higher end). From this, we can learn that most of the cars in the dataset seem to have an MPG of around 15-20 mpg or 25-30 mpg for their miles per gallon for their highway mileage. 
-\\
-\\2) We are now asked to create a scatterplot, putting 'hwy' on the x-axis and 'cty' on the y-axis. Below is the scatterplot:
+
+\subsection*{Question 2}
+We are now asked to create a scatterplot, putting 'hwy' on the x-axis and 'cty' on the y-axis. Below is the scatterplot:
 ```{r}
 ggplot(mpg, aes(x=hwy, y=cty)) + geom_point()
 ```
 We are asked if there is a relationship between hwy and cty. Looking at the scatterplot, we state that there is indeed a relationship between hwy and cty: namely, a positive, linear relationship. This tells us that as the miles per gallon for the highway mileage increases, so does the miles per gallon for the city mileage. 
-\\
-\\3) We are asked to make a bar plot of manufacturer, flip it so that the manufacturers are on the y-axis, and to order the bars by height. To do this, we first need to call the library 'forcats' from tidyverse that will let us re-order the bars in the bar graph.
+
+\subsection*{Question 3}
+We are asked to make a bar plot of manufacturer, flip it so that the manufacturers are on the y-axis, and to order the bars by height. To do this, we first need to call the library 'forcats' from tidyverse that will let us re-order the bars in the bar graph.
 ```{r}
 library(forcats)
 ```
@@ -81,21 +89,15 @@ ggplot(mpg, aes(x = fct_infreq(manufacturer))) + geom_bar(stat = "count") + coor
 
 We are then asked which manufacturer produced the most cars, and which one produced the least. From the bar plot above, we see that the one that produced the most is Dodge, and the one that produced the least is Lincoln.
 
-
-
-
-4) We are asked to make a boxplot of hwy, grouped by cyl. We do this below as follows:
+\subsection*{Question 4}
+We are asked to make a boxplot of hwy, grouped by cyl. We do this below as follows:
 ```{r}
 ggplot(mpg, aes(x = factor(cyl), y = hwy, fill = "blue")) + geom_boxplot()
 ```
 We are then asked if we see a pattern. Looking at this boxplot, I do indeed see a pattern. As the number of cylinder's increases, the miles per gallon for the highway mileage of cars decreases in a linear fashion. 
 
-
-
-
-
-
-5) We are asked to use corrplot() to make a lower triangle correlation matrix of the mpg dataset. We first call the corrplot() package.
+\subsection*{Question 5}
+We are asked to use corrplot() to make a lower triangle correlation matrix of the mpg dataset. We first call the corrplot() package.
 ```{r}
 library(corrplot)
 ```
