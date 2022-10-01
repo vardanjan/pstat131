@@ -9,8 +9,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The link to my dataset can be found here: https://www.kaggle.com/datasets/janiobachmann/math-students
-
 
 
 \section*{Overview of Dataset}
