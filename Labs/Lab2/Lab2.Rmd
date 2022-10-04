@@ -1,0 +1,247 @@
+---
+title: "Lab 2"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Importing all of the libraries we need.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(tidymodels)
+library(corrplot)
+library(ggthemes)
+tidymodels_prefer()
+```
+
+
+We are then starting with the diamonds dataset. First, we look at the first few lines of it.
+
+```{r}
+diamonds %>%
+  head()
+```
+
+\section*{Activities}
+1) How many observations are there in diamonds?
+```{r}
+count(diamonds)
+```
+There are 53940 observations.
+
+2) How many variables are in diamonds, and of these, how many are features we could use for predicting price?
+```{r}
+print(ncol(diamonds))
+```
+From these 10 variables (columns), the ones that could be features for predicting the price are all of them, to be honest. They are all features which, in my opinion, could be used to determine the price of the diamond.
+
+
+We then make a correlation matrix as described:
+```{r}
+diamonds %>%
+  select(is.numeric) %>%
+  cor() %>%
+  corrplot(type = 'lower', diag = FALSE, method = 'color')
+```
+
+\section*{Activities}
+1) The features positively correlated with price are x,y, and z, which represent the length, wiidth, and depth of the diamond in mm, respectively. It makes sense, since the larger a diamond, the bigger it should be.
+
+2) There are no variables negatively correlated with price.
+
+3) The features correlated with each other are x,y,z. This might be because diamonds have a general shape they follow, and if the size in one direction increases, it would make sense for the sizes in the other directions to also increase.
+
+
+
+We now make a boxplot of the distribution of price per level of cut and color, to see if there appears to be a relationship between it and these predictors.
+
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = price, y = reorder(cut, price), fill = color)) + 
+  geom_boxplot() + 
+  labs(y = "Cut", x = "Price") + 
+  theme_bw()
+```
+\section*{Activities}
+1) From this plot, I have learned that the relationship between plot and cut is pretty strong, as the prices of the diamonds decrease as the cut decreases. Also, depending on the cut, there are some colors that can fetch a higher value than other cuts. In particular, the colors J and I seem to be fetching the highest price across all cuts. The main thing I am noticing is that there is an incredibly large amount of outliers in alll of the boxplots.
+
+2) The one thing that suprised me is that J, one of the worst colors, was fetching the highest prices across all the cuts.
+
+3) I think that J tends to cost more since, because it is considered the worst color, less diamonds of are made of that color, and so they are harder to find, therefore driving up their price.
+
+
+We now want to take a look at the relationship between color and carat to explore further.
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = carat, y = reorder(color, carat))) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  labs(x = "Carat", y = "Color")
+```
+
+\section*{Activity Question}
+Lower color qualities tend to cost more since they have more carats on average.
+
+We now asses the distribution of our outcome variable price.
+```{r}
+diamonds %>%
+  ggplot(aes(x = price)) + 
+  geom_histogram(bins = 60) + 
+  theme_bw()
+```
+
+\section*{Activity}
+We are asked to create a single plot to visualize the relationship between cut, carat, and price. 
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) + geom_point(aes(color = cut)) + 
+  theme_bw()
+```
+
+
+\section*{Data Splitting}
+```{r}
+set.seed(3435)
+
+diamonds_split <- initial_split(diamonds, prop = 0.80, strata = price)
+
+diamonds_train <- training(diamonds_split)
+diamonds_test <- testing(diamonds_split)
+```
+
+\section*{Activities}
+1) Determine how many observations are in the training and observation sets, respectively.
+```{r}
+print(count(diamonds_train))
+print(count(diamonds_test))
+```
+In the training set, there is 43,152 and in the test set, there is 10788. 
+
+2) I think that the strata = price argument randomly splits the data according to the price variable. Looking at the documentation, I believe that I am right.
+
+
+\section*{Linear Regression}
+Creating the recipe.
+
+```{r}
+simple_diamonds_recipe <-
+  recipe(price ~ ., data = diamonds_train)
+```
+
+Calling the recipe object now.
+```{r}
+simple_diamonds_recipe
+```
+
+We then dummy code all categorical predictors, which we can do with step functions:
+```{r}
+diamonds_recipe <- recipe(price ~ ., data = diamonds_train) %>% step_dummy(all_nominal_predictors())
+```
+
+\section*{Activities}
+We are asked to use the internet to find out about possible step functions we didn't use, find three of them, and then name and describe them.
+
+1) 'step': chooses a model based on AIC.
+
+2) 'stepfun': returns an interpolating 'step' function.
+
+3) step_zv: creates a specification of a recipe step that will remove variables that contain only a single value.
+
+
+
+Then, we specify the model engine that we want to fit:
+```{r}
+lm_model <- linear_reg() %>%
+  set_engine("lm")
+```
+
+
+We then set up a workflow, to try out a variety of different models or several different recipes in the future:
+```{r}
+lm_wflow <- workflow() %>%
+  add_model(lm_model) %>%
+  add_recipe(diamonds_recipe)
+```
+
+Then, we can fit the linear model to the training set:
+```{r}
+lm_fit <- fit(lm_wflow, diamonds_train)
+```
+
+Then, we can view the results:
+```{r}
+lm_fit %>%
+  # This will return the parsnip object.
+  extract_fit_parsnip() %>%
+  # Now we tidy the linear model object.
+  tidy()
+```
+
+\section*{Activities}
+1) The intercept represents the mean value of the response variable, price, when all of the predictor variables are equal to 0.
+
+2) The effect carat is strong, as it's value is 11282.0, which is quite large in comparasion to all the other values of the predictors. It is a signifigant predictor of price, since it's p-value is 0, which indicates that we reject the null hypothesis that it's coefficient is equal to 0. In other words, it is a strong predictor, since change's in it's value will strongly affect the value of the price. If everything else is held constant, the effect on price of a one unit increase in carat is equal to 11,282. 
+
+
+We can then calculate the training root mean squared error as follows.
+```{r}
+#First, we generate predicted values for price for each observation in the training set.
+diamond_train_res <- predict(lm_fit, new_data = diamonds_train %>% select(-price))
+diamond_train_res %>% head()
+  
+```
+Then, we will attach a column with the actual observed price observations:
+```{r}
+diamond_train_res <- bind_cols(diamond_train_res, diamonds_train %>% select(price))
+diamond_train_res %>% head()
+```
+If we are interested in a plot of predicted values vs. actual values, we can do the following:
+```{r}
+diamond_train_res %>%
+  ggplot(aes(x = .pred, y = price)) + 
+  geom_point(alpha = 0.2) + 
+  geom_abline(lty = 2) + 
+  theme_bw() + 
+  coord_obs_pred()
+```
+
+
+This model did pretty poorly. Other models might do a better job. But, we'll record the linear model's RMSE as a on the training data as a basline:
+
+```{r}
+rmse(diamond_train_res, truth = price, estimate = .pred)
+```
+
+We can create and view a "metric" set of RMSE, MSE, and R^2 as follows:
+```{r}
+diamond_metrics <- metric_set(rmse, rsq, mae)
+diamond_metrics(diamond_train_res, truth = price, estimate = .pred)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
