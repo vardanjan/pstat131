@@ -1,0 +1,172 @@
+---
+title: "Homework 2"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+First, we read in the data.
+```{r}
+dataset <- read.csv("/Users/vardan/Desktop/pstat131/Homework/Homework2/data/abalone.csv")
+```
+
+Then, we load in the tidyverse and tidymodels libraries as desired. Additionally, we also load the 'ggplot2' library, which can help with some of the questions asked of us.
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(ggplot2)
+```
+
+
+
+
+
+\section*{Question 1}
+Our goal is to add 'age' to the dataset. We do this as follows:
+```{r}
+new_dataset <- dataset %>%
+  mutate(
+    age = rings + 1.5
+  )
+```
+We have added the age column to the dataset, as desired. We are then asked to assess and describe the distribution of the 'age' variable. To do this, we can create a histogram plot of the 'age' variable and examine it. We do this as follows:
+```{r}
+ggplot(new_dataset, aes(x = age)) + geom_histogram()
+```
+Looking at this plot, we see that 'age' is distributed approximately normally, with a mean at x = 11. Additionally, we can see that it has some outliers around x = 0 and x = 20-30, but most of the values are concentrated between x = 5 and x = 22. 
+
+
+
+\section*{Question 2}
+We are then asked to split the data into a training and a testing set using stratified sampling, and that we should decide on appropriate percentages for splitting the data. From Lab 2, we recall that we chose to do the split 80-20: that is, 80 percent of the data will be put into the training set, and 20 percent will be put into the testing set. This seems like an appropriate percentage to me, so it is one that we will use. We then set the seed, and split the data, as follows:
+```{r}
+set.seed(69)
+
+
+new_dataset_split <- initial_split(new_dataset, prop = 0.80, strata = age)
+
+new_dataset_train <- training(new_dataset_split)
+new_dataset_test <- testing(new_dataset_split)
+```
+
+
+
+
+\section*{Question 3}
+We are asked to create a recipe predicting the outcome variable, age, with all other predictor variables. We are asked to state why we shouldn't use rings to predict age. We do not want to use the variables 'rings' to predict 'age' because the variables 'age' and 'rings' are collinear by construction. We recall that 'age' is literally the variable 'rings', with 1.5 added. This means that the two variables have a linear relationship, which would cause problems if we try to use the variable 'rings' as a predictor. In particular, it may lead to our model being overfit, and/or the variance being inflated past it's true value. Thus, this is why wew should not use the 'rings' variable to predict 'age'. We then code the recipe to predict the outcome variable 'age' as desired:
+```{r}
+#First, we create the recipe, removing the predictor 'rings'.
+age_recipe <-
+  recipe(age ~ ., data = new_dataset_train) %>%
+  step_rm(rings)
+
+#Then, we want to code the dummy variables for any categorical predictors. We note that 'type', which indicates the sex, is the only categorical predictor.
+age_recipe <- 
+  age_recipe %>%
+  step_dummy('type') %>%
+  prep(training = new_dataset_train)
+
+#Now, we want to create interactions between three different variables. 
+age_recipe <- 
+  age_recipe %>%
+  step_interact( ~ starts_with("type"):shucked_weight) %>%
+  prep(training = new_dataset_train)
+
+age_recipe <- 
+  age_recipe %>%
+  step_interact( ~ longest_shell:diameter) %>%
+  prep(training = new_dataset_train)
+
+age_recipe <- 
+  age_recipe %>%
+  step_interact( ~ shucked_weight:shell_weight) %>%
+  prep(training = new_dataset_train)
+
+#Finally, we normalize and center all predictors, as is asked of us.
+age_recipe <-
+  age_recipe %>% 
+  step_normalize(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  prep(training = new_dataset_train)
+
+
+```
+
+
+
+
+
+\section*{Question 4}
+We are asked to create and store a linear regression object using the "lm" engine.
+```{r}
+lm_model <- linear_reg() %>%
+  set_engine("lm")
+```
+
+
+\section*{Question 5}
+We are now asked to set up an empty workflow, add the model we created in Q4, and the recipe we created in Q3. We do this as follows:
+```{r}
+lm_wflow <- workflow() %>%
+  add_model(lm_model) %>%
+  add_recipe(age_recipe)
+```
+
+
+\section*{Question 6}
+We are now asked to use our fit() object to predict the age of a hypothetical female abalone with several given values for the predictors.
+```{r}
+#First, let us fit the linear model according to our training set.
+lm_fit <- fit(lm_wflow, new_dataset_train)
+
+#Then, let us view the results of this.
+results <- lm_fit %>%
+  # This will return the parsnip object.
+  extract_fit_parsnip() %>%
+  # Now we tidy the linear model object.
+  tidy()
+
+results
+
+#Then, we use the predict() function, along with the lm_fit object, to predict the age of a hypothetical female abalone with longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1.
+
+input = data.frame(c('F', 0.5, 0.10, 0.30, 4, 1, 2, 1))
+
+predicted_age <- predict(lm_fit, new_data = input)
+
+#predicted_age
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
