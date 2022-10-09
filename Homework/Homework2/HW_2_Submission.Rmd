@@ -62,40 +62,18 @@ new_dataset_test <- testing(new_dataset_split)
 \section*{Question 3}
 We are asked to create a recipe predicting the outcome variable, age, with all other predictor variables. We are asked to state why we shouldn't use rings to predict age. We do not want to use the variables 'rings' to predict 'age' because the variables 'age' and 'rings' are collinear by construction. We recall that 'age' is literally the variable 'rings', with 1.5 added. This means that the two variables have a linear relationship, which would cause problems if we try to use the variable 'rings' as a predictor. In particular, it may lead to our model being overfit, and/or the variance being inflated past it's true value. Thus, this is why wew should not use the 'rings' variable to predict 'age'. We then code the recipe to predict the outcome variable 'age' as desired:
 ```{r}
-#First, we create the recipe, removing the predictor 'rings'.
+#First, we create the recipe, removing the predictor 'rings'. #Then, we want to code the dummy variables for any categorical predictors. We note that 'type', which indicates the sex, is the only categorical predictor. #Now, we want to create interactions between three different variables. Finally, we normalize and center all predictors, as is asked of us.
+
+new_dataset_train <- new_dataset_train %>% select(-rings)
+
 age_recipe <-
   recipe(age ~ ., data = new_dataset_train) %>%
-  step_rm(rings)
-
-#Then, we want to code the dummy variables for any categorical predictors. We note that 'type', which indicates the sex, is the only categorical predictor.
-age_recipe <- 
-  age_recipe %>%
   step_dummy('type') %>%
-  prep(training = new_dataset_train)
-
-#Now, we want to create interactions between three different variables. 
-age_recipe <- 
-  age_recipe %>%
   step_interact( ~ starts_with("type"):shucked_weight) %>%
-  prep(training = new_dataset_train)
-
-age_recipe <- 
-  age_recipe %>%
   step_interact( ~ longest_shell:diameter) %>%
-  prep(training = new_dataset_train)
-
-age_recipe <- 
-  age_recipe %>%
   step_interact( ~ shucked_weight:shell_weight) %>%
-  prep(training = new_dataset_train)
-
-#Finally, we normalize and center all predictors, as is asked of us.
-age_recipe <-
-  age_recipe %>% 
   step_normalize(all_predictors()) %>%
-  step_center(all_predictors()) %>%
-  prep(training = new_dataset_train)
-
+  step_center(all_predictors())
 
 ```
 
@@ -137,16 +115,38 @@ results
 
 #Then, we use the predict() function, along with the lm_fit object, to predict the age of a hypothetical female abalone with longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1.
 
-input = data.frame(c('F', 0.5, 0.10, 0.30, 4, 1, 2, 1))
+input <- data.frame(type = 'F', longest_shell = 0.5, diameter = 0.10, height = 0.30, whole_weight = 4.0, shucked_weight = 1.0, viscera_weight = 2.0, shell_weight =  1.0)
 
 predicted_age <- predict(lm_fit, new_data = input)
 
-#predicted_age
+
+predicted_age
+```
+Thus, the predicted age of this female abalone is 25.18972. 
+
+
+
+\section*{Question 7}
+We then want to assess our model's performance using the 'yardstick' package.
+
+1. We are first asked to create a metric set that includes R^2, RMSE, and MAE. We do this as follows:
+```{r}
+dataset_metrics <- metric_set(rmse, rsq, mae)
+diamond_metrics(diamond_train_res, truth = price, estimate = .pred)
 ```
 
 
+2. We are then asked to se predict() and bind_cols() to create a tibble of your model’s predicted values from the training data along with the actual observed ages.
+```{r}
+new_dataset_train_res <- predict(lm_fit, new_data = new_dataset_train %>% select(-age))
+new_dataset_train_res <- bind_cols(new_dataset_train_res, new_dataset_train %>% select(age))
+```
 
-
+3. We are finally asked to apply our metric set to the tibble, report the results, and interpret the R2 value.
+```{r}
+dataset_metrics(new_dataset_train_res, truth = age, estimate = .pred)
+```
+From this, we can see that the Root Mean Squared Error is equal to 2.1672959, the R^2 value is equal to 0.5574355, and the mean absolute error is equal to 1.5544993. We interpret the R^2 value as follows: Approximately 55.74 percent of the variability in the 'age' response variable is explained by the linear regression model.
 
 
 
