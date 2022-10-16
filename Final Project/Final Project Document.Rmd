@@ -1,0 +1,124 @@
+---
+title: "Final Project Document"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Calling Libraries that we need.
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(tidymodels)
+library(ISLR)
+require(gridExtra)
+```
+
+
+#Importing the csv file.
+```{r}
+dataset <- read.csv('/Users/vardan/Desktop/pstat131/Final\ Project/student-mat.csv')
+```
+
+
+
+\section*{Starting Exploratory Data Analysis}
+First, we want to analyze how the three variables, G1, G2, G3 change over time, as G1 is the grades at the first grading period, G2 is the grades at the second grading period, and G3 is the grades at the final grading period (and the variable we want to predict). We use the grid.arrange() function as follows to compare the three variables side by side and see how grades shift over time. 
+```{r}
+plot1 <- ggplot(data = dataset, aes(x = G1)) + geom_histogram(color = 'black', fill = 'red', bins = 15)
+plot2 <- ggplot(data = dataset, aes(x = G2)) + geom_histogram(color = 'black', fill = 'green', bins = 15)
+plot3 <- ggplot(data = dataset, aes(x = G3)) + geom_histogram(color = 'black', fill = 'blue', bins = 15)
+
+grid.arrange(plot1, plot2, plot3, ncol = 3)
+
+```
+Looking at these graphs over time, we see an interesting trend. In the first grading period, the distribution of G1 is mostly uniform, but there seems to be quite a lot of students who have low class grades (lower than the mean of 10). In the second grading period, we start to see an uptick in the number of students who have a 0 as a class grade (but the number of students who had a lower class grade than 10 has decreased slightly). In the final grading period, there is an even larger uptick in the number of students who have a class grade of 0, but now there are very few students who have a non-zero class grader that is lower than the mean of 10. Analyzing this, I think that this means the following. As students begin the class, very few students drop the class by the first grading period, even if they are not performing well. However, as the end of the quarter/semester approaches, students who are not performing as well may choose to cut their losses and drop the class. This means that their class grade becomes a 0. Thus, I think that this is the reason why we see so many students who have a score of 0 for G3, their final score in the class: they were the students who dropped the class because they weren't performing well/other outside circumstances.
+
+Now, we want to get rid of all the nominal predictors in the dataset, and see how it looks like with just numeric predictors. Note that we don't include G1 and G2, since they are clearly related to G3, and we would run into an issue of collinearity.
+```{r}
+dataset <- dataset %>% select(c(age, Medu, Fedu, traveltime, studytime, 
+                                failures, famrel, freetime, goout, Dalc, 
+                                Walc, health, absences, G3))
+```
+
+
+Now that we have reduced the dataset just to numerical predictors that shouldn't cause an issue with collinearity, we can perform linear regression. 
+```{r}
+#Setting the seed.
+set.seed(69)
+
+
+#spliitting the dataset into two for a training and a test set.
+dataset_split <- initial_split(dataset, prop = 0.80, strata = G3)
+
+#creating the training and testing sets.
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+
+#creating the recipe.
+recipe <-
+  recipe(G3 ~ ., data = dataset_train) %>%
+  step_normalize(all_predictors()) %>%
+  step_center(all_predictors())
+
+
+#creating the linear regression object.
+lm_model <- linear_reg() %>%
+  set_engine("lm")
+
+#creating the workflow.
+lm_wflow <- workflow() %>%
+  add_model(lm_model) %>%
+  add_recipe(recipe)
+
+#fit the linear model according to our training set.
+lm_fit <- fit(lm_wflow, dataset_train)
+
+#viewing the results of this.
+results <- lm_fit %>%
+  # This will return the parsnip object.
+  extract_fit_parsnip() %>%
+  # Now we tidy the linear model object.
+  tidy()
+
+results
+```
+Looking at the estimates for each of the variables, we can notice some interesting things. One, it seems that as the variables 1) age, 2) the amount of time you spending travelling to school, 3) the number of previous class failures, and 4) the amount of time you spend going out with friends, increases, the lower your overall class grade will be. On the other hand, we can see that as the 1) the mother's education level, 2) study time, 3) free time, and 4) weekend alcohol consumption increases, the higher your overall class grade will be. 
+
+Most of these trends seem to make sense, with two needing maybe some explanation. I think the reason that the mother's education level being higher leads to an increase in the overall grade, as opposed to the father's, is as follows. Traditinally, mother's are the parents that stay at home with children to take care of them. This means that they spend more time with their children, and help them with things such as homework. Thus, kids who have mother's that are more educated are more likely to have a better education than those that do not. So, if a kid has a mother that is highly educated, than she may be able to help them more in their studies (and get a better grade) than a mother who has not had the chance to obtain a high education. 
+
+The other trend that doesn't make much sense is weekend alcohol consumption level leading to higher grades. My theory is as follows: we can see from the predictors that the higher your weekday alcohol consumption level is, the lower overall grade you might have. Thus, it would make sense that if students who drink a lot on the weekends, but not a lot on the weekdays, have higher final scores, as opposed to students that do the opposite. It might be an indication that students who only drink on the weekends prioritize their studies more, and thus, have higher overall grades.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
