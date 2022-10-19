@@ -1,0 +1,95 @@
+---
+title: "Homework 3 Submission"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+First, we read in the data.
+```{r}
+dataset <- read.csv("/Users/vardan/Desktop/pstat131/Homework/Homework3/data/titanic.csv")
+```
+
+Then, we load in the tidyverse and tidymodels libraries as desired. Additionally, we also load the 'ggplot2' library, which can help with some of the questions asked of us.
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(ggplot2)
+```
+
+We also are told that 'survived' and 'pclass' should be changed to factors, and that when changing 'survived' to a factor, to reorder the factor so that 'Yes' is the first factor. We do this as follows:
+```{r}
+#Changing them to factors.
+dataset$survived <- as.factor(dataset$survived)
+dataset$pclass <- as.factor(dataset$pclass)
+
+#Reordering the factor so that 'Yes' is the first factor.
+dataset$survived <- relevel(dataset$survived, 'Yes')
+```
+
+Finally, we set the seed so that our code can be reproduced.
+```{r}
+set.seed(69)
+```
+
+
+\section*{Question 1}
+We are asked to split the data, stratifying on the outcome variable 'survived'. We are asked to choose the proportions to split the data into. We choose 80/20 again, as this has worked out consistently in the past for us in previous homeworks and lab assignments. 
+```{r}
+dataset_split <- initial_split(dataset, prop = 0.80, strata = survived)
+
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+```
+We then want to verify that the training and testing data sets have an appropriate number of observations. We check their sizes as follows:
+```{r}
+#First, we check the size of the original dataset.
+nrow(dataset)
+
+#Then, we check the size of the training and test datasets.
+nrow(dataset_train)
+nrow(dataset_test)
+```
+Looking at the training and testing datasets, it looks like they each have a good number of observations for the purposes they serve. We are then asked to take a look at the training data and see if there are any potential issues, such as missing data.
+```{r}
+head(dataset_train, 15)
+```
+Looking at the data, it seems mostly clean, with the exception of some missing values (as expected). In particular, we see that the Cabin number variable seems to be missing for quite a bit of the observations. In addition, there are some inputs for the 'Age' variable that are also missing. There may be other values that are missing in other columns, but the overall message is clear: this dataset definitely has some missing data, which could impact the overall results of the analysis. 
+
+Finally, for this question, we are asked why it might be a good idea to use stratified sampling for this dataset. The reason we use stratified sampling is as follows. The majority of the passangers on the Titanic died, and thus, if we didn't use stratified sampling on the 'survived' variable, then perhaps a larger majority of our training dataset would have had more observations of passenger's who didn't survive. By using stratified sampling, we can guarantee that our training and testing datasets have roughly equal amounts of passengers who passed away and survived.
+
+
+\section*{Question 2}
+We are asked to explore/describe the distribution of the outcome variable 'survived' with the training dataset. First, let us plot a bar plot of the survived vs. not survived.
+```{r}
+ggplot(dataset_train, aes(x = survived)) + geom_histogram(stat = 'count')
+```
+From this, we can see that it looks like more people did not survive, as opposed to did survive. This graph is not very informative though. Let us instead try grouping 'survived' with some other variables that might tell us more about it.
+```{r}
+ggplot(dataset_train, aes(x = survived, fill = sex)) + geom_bar()
+```
+Looking at this, we can see that there seems to be a much higher proportion of females that survived as opposed to males. Let's look at the age distribution, and see the ages that survived. 
+```{r}
+ggplot(dataset_train, aes(x = age, fill = survived)) + geom_histogram(binwidth = 2)
+```
+Looking at this histogram, we can see that it seems like the majority of the passengers who survived were younger in age: particularly, those below 10 seem to have a higher chance of surviving as opposed to not surviving. Then, let us finally look at the survival rates by class. 
+```{r}
+ggplot(dataset_train, aes(x = pclass, fill = survived)) + geom_bar()
+```
+Looking at this, it seems like first class passengers had a pretty decent chance of surviving, well over 50 percent. Second class passengers also had a somewhat decent chance of surviving, with around a 50 percent survival rate. Finally, it seems like the third class passengers had a very bad survival rate, with only a little over a quarter of the passengers in the third class surviving. 
+
+Thus, we have enough information to describe the distribution of survived as follows. It seems that more passengers did not survive on the Titanic, as opposed to survived. It also seems that women were much more likely to survive, as opposed to men. Additionally, younger passengers also had a higher chance of surviving the crash than older passengers. Finally, it seems that first class passengers and second class passengers had a somewhat decent chance of surviving, as opposed to third class passengers. This is the distribution of the 'survived' variable. 
+
+
+
+
+
+
+
+
+
