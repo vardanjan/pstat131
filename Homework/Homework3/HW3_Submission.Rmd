@@ -15,11 +15,12 @@ First, we read in the data.
 dataset <- read.csv("/Users/vardan/Desktop/pstat131/Homework/Homework3/data/titanic.csv")
 ```
 
-Then, we load in the tidyverse and tidymodels libraries as desired. Additionally, we also load the 'ggplot2' library, which can help with some of the questions asked of us.
+Then, we load in the tidyverse and tidymodels libraries as desired. Additionally, we also load the 'ggplot2' and 'corrplot' libraries, which can help with some of the questions asked of us.
 ```{r}
 library(tidyverse)
 library(tidymodels)
 library(ggplot2)
+library(corrplot)
 ```
 
 We also are told that 'survived' and 'pclass' should be changed to factors, and that when changing 'survived' to a factor, to reorder the factor so that 'Yes' is the first factor. We do this as follows:
@@ -86,6 +87,26 @@ Looking at this, it seems like first class passengers had a pretty decent chance
 Thus, we have enough information to describe the distribution of survived as follows. It seems that more passengers did not survive on the Titanic, as opposed to survived. It also seems that women were much more likely to survive, as opposed to men. Additionally, younger passengers also had a higher chance of surviving the crash than older passengers. Finally, it seems that first class passengers and second class passengers had a somewhat decent chance of surviving, as opposed to third class passengers. This is the distribution of the 'survived' variable. 
 
 
+\section*{Question 3}
+Using the training dataset, we are asked to create a correlation matrix of all continuous variables. We state that 'age', 'fare', 'sib_sp', 'parch', 'fare' are continuous variables. We create the correlation matrix as follows:
+```{r}
+#Assigning all of the non continuous variables as null.
+dataset_corr <- dataset
+dataset_corr$passenger_id <- NULL
+dataset_corr$survived <- NULL
+dataset_corr$pclass <- NULL
+dataset_corr$name <- NULL
+dataset_corr$sex <- NULL
+dataset_corr$ticket <- NULL
+dataset_corr$cabin <- NULL
+dataset_corr$embarked <- NULL
+
+#Creating the correlation matrix, and visualizing it.
+corrplot(cor(dataset_corr), method = 'number', type = 'lower')
+```
+Looking at this matrix, we see that parch and sib_sp seem to be somewhat correlated with one another. 
+
+#How to deal with null values?
 
 
 
