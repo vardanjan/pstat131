@@ -102,11 +102,222 @@ dataset_corr$cabin <- NULL
 dataset_corr$embarked <- NULL
 
 #Creating the correlation matrix, and visualizing it.
-corrplot(cor(dataset_corr), method = 'number', type = 'lower')
+corrplot(cor(dataset_corr, use = "complete.obs"), method = 'number', type = 'lower')
 ```
-Looking at this matrix, we see that parch and sib_sp seem to be somewhat correlated with one another. 
+Looking at this matrix, we see that age and sib_sp seem to be slightly negatively correlated with one another. Additionally, we see that parch and sib_sp are slightly positively correlated with one another. These are the only two sets of predictors that seem to have some type of meaningful relationship with one another. 
 
-#How to deal with null values?
+
+
+\section*{Question 4}
+We are asked to create a recipe predicting the outcome variable survived, using the predictors ticket class, sex, age, number of siblings or spouses aboard, number of parents or children aboard, and passenger fare. We are asked to do this on the training data. Additionally, we are asked to use step_impute_linear() to account for the fact that there are some missing variables in age. We are also asked to include interactions between sex/passenger fare, and age/passenger fare. We do all of this as follows:
+```{r}
+#Creating the recipe.
+survived_recipe <-
+  #Defining the predictors and response variables, and doing it on the training dataset.
+  recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = dataset_train) %>%
+  #imputing the variable age.
+  step_impute_linear(age) %>%
+  #creating dummy variables for all categorical variables.
+  step_dummy(all_nominal_predictors()) %>%
+  #creating the interaction terms.
+  step_interact( ~ starts_with("sex"):fare) %>%
+  step_interact( ~ age:fare)
+```
+
+
+
+
+
+\section*{Question 5}
+We are asked to specify a logistic regression model for classification using the 'glm' engine. Then, we are asked to create a workflow, and to add our model and the appropriate recipe. We are then asked to use fit() to apply our workflow to the training data, and to store the results of fit(). We do all of this as follows:
+```{r}
+#First, we define the logistic regression model using 'glm'.
+log_reg <- logistic_reg() %>% 
+  set_engine("glm") %>% 
+  set_mode("classification")
+
+#We then define the workflow and add the recipe.
+log_wkflow <- workflow() %>% 
+  add_model(log_reg) %>% 
+  add_recipe(survived_recipe)
+
+#We then fit the data on the training data.
+log_fit <- fit(log_wkflow, dataset_train)
+
+#We then tidy the data and assign it to a variable name.
+glm_tidy <- log_fit %>% 
+  tidy()
+
+#Printing out the tidied data so we can look at it.
+glm_tidy
+```
+
+\section*{Question 6}
+We are asked to repeat Question 5, but this time to specify a linear discriminant analysis model for classification using the 'MASS' engine. We do this as follows:
+```{r}
+#First, we define the LDA model using 'MASS'.
+lda_mod <- discrim_linear() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+#We then define the workflow and add the recipe.
+lda_wkflow <- workflow() %>% 
+  add_model(lda_mod) %>% 
+  add_recipe(survived_recipe)
+
+#We then fit the data on the training data.
+lda_fit <- fit(lda_wkflow, dataset_train)
+
+#Printing out the coefficients of the linear discriminants.
+lda_fit
+```
+
+
+
+\section*{Question 7}
+We are then asked to repeat Question 5 (again!), but this time, specifying a quadratic discriminant analysis model for classification. We do this as follows:
+```{r}
+#Defining the model for QDA.
+qda_mod <- discrim_quad() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+#Creating the workflow and adding the recipe.
+qda_wkflow <- workflow() %>% 
+  add_model(qda_mod) %>% 
+  add_recipe(survived_recipe)
+
+#Fitting the model.
+qda_fit <- fit(qda_wkflow, dataset_train)
+
+#Printing out the fit to look at the values.
+qda_fit
+```
+
+
+\section*{Question 8}
+We are once again asked to repeat Question 5, but this time, to specify a naive Bayes model for classification using the "klaR" engine. We are also asked to set the 'usekernel' argument to FALSE. We do this as follows:
+```{r}
+#We fit the naive Bayes model as asked of us.
+nb_mod <- naive_Bayes() %>% 
+  set_mode("classification") %>% 
+  set_engine("klaR") %>% 
+  set_args(usekernel = FALSE) 
+
+#We create the workflow, and add our recipe into it.
+nb_wkflow <- workflow() %>% 
+  add_model(nb_mod) %>% 
+  add_recipe(survived_recipe)
+
+#We then fit our model on the training dataset.
+nb_fit <- fit(nb_wkflow, dataset_train)
+
+#We print out nb_fit just to see what it looks like.
+nb_fit
+```
+
+
+\section*{Question 9}
+We are now asked to use predict() and bind_cols() to generate predictions using each of these four models and our training data. We are then asked to use the 'accuracy' metric to assess the performance of each of the four models, and to state which model achieved the highest accuracy on our training data. We do this as follows:
+```{r}
+#First, we want to write code to get the predicted classes of the passengers, where the class indicates if the passenger survived or not.
+
+#We obtain the predictions of which passengers survived and didn't survive for each model.
+log_prb_pred <- predict(log_fit, new_data = dataset_train, type = "class") 
+lda_prb_pred <- predict(lda_fit, new_data = dataset_train, type = "class") 
+qda_prb_pred <- predict(qda_fit, new_data = dataset_train, type = "class") 
+nb_prb_pred <- predict(nb_fit, new_data = dataset_train, type = "class") 
+
+
+#Then, we append these columns using bind_cols() to the true class that each passenger had, where the class is 'survived'.
+model_predictions <- bind_cols(dataset_train %>% select(survived), log_prb_pred, lda_prb_pred, qda_prb_pred, nb_prb_pred)
+
+#Renaming the column names so they make more sense.
+colnames(model_predictions) <- c('Truth', 'LOG', 'LDA', 'QDA', 'NB')
+
+#Printing out the dataframe for us to view.
+model_predictions
+```
+
+Thus, we have used predict() and bind_cols() to generate predictions using each of these four models and our training data. We then turn to the accuracy metric portion of the question.
+```{r}
+#We then use the 'accuracy' metric to assess the performance of each of the four models.
+
+#Getting the logistic regression accuraccy.
+log_reg_acc <- augment(log_fit, new_data = dataset_train) %>%
+  accuracy(truth = survived, estimate = .pred_class)
+
+#Getting the LDA accuracy.
+lda_acc <- augment(lda_fit, new_data = dataset_train) %>%
+  accuracy(truth = survived, estimate = .pred_class)
+
+#Getting the QDA accuracy.
+qda_acc <- augment(qda_fit, new_data = dataset_train) %>%
+  accuracy(truth = survived, estimate = .pred_class)
+
+#Getting the Naive Bayes accuracy.
+nb_acc <- augment(nb_fit, new_data = dataset_train) %>%
+  accuracy(truth = survived, estimate = .pred_class)
+
+#Putting all of the accuracies together.
+accuracies <- c(log_reg_acc$.estimate, lda_acc$.estimate, 
+                nb_acc$.estimate, qda_acc$.estimate)
+
+#Putting all of the model names together.
+models <- c("Logistic Regression", "LDA", "Naive Bayes", "QDA")
+
+#Combining the two lists into one tibble.
+results <- tibble(accuracies = accuracies, models = models)
+
+#Printing out the results and arranging them nicely. 
+results %>% 
+  arrange(-accuracies)
+```
+The model that achieves the highest accuracy on the training data is Logistic Regression, with an accuracy of approximately 80.47 percent.
+
+
+\section*{Question 10}
+We are now asked to fit the model with the highest training accuracy to the testing data, and to report the accuracy of the model on the testing data. We do this as follows:
+```{r}
+#We fit the model on the testing data now.
+log_fit_test <- fit(log_wkflow, dataset_test)
+
+#We then calculate it's accuracy.
+log_reg_acc_test <- augment(log_fit_test, new_data = dataset_test) %>%
+  accuracy(truth = survived, estimate = .pred_class)
+
+#Printing out the accuracy value.
+log_reg_acc_test
+
+```
+We see that, with the testing data, the accuracy of the Logistic Regression model is approximately 83.24 percent. We are now asked to, with the testing data, create a confusion matrix and visualize it. We do this as follows:
+```{r}
+#Creating the confusion matrix.
+augment(log_fit_test, new_data = dataset_test) %>%
+  conf_mat(truth = survived, estimate = .pred_class) %>%
+  autoplot(type = "heatmap")
+```
+Looking at this visualization at face value, we can see that the model seems to be performing mostly well, as it correctly is classifying most of the observations. Finally, we are asked to plot an ROC curve, and to calculate the area under it (AUC).
+```{r}
+#Here, we plot the ROC curve.
+augment(log_fit_test, new_data = dataset_test) %>%
+  roc_curve(survived, .pred_Yes) %>%
+  autoplot()
+```
+This is the ROC graph. We can get it's area under the accuracy of the curve as follows:
+```{r}
+augment(log_fit_test, new_data = dataset_test) %>%
+  roc_auc(survived, .pred_Yes)
+```
+Thus, we see that the area under the curve is equal to about 89.52. We are then asked how the model performed. I personally think that the model performed pretty well, as it did very well on both the training and testing datasets. In particular, it's training accuracy was approximately 80.47 percent, while it's testing accuracy was approximately 83.24 percent. I think that the values differ because the training and the testing datasets are two different datasets, and thus, they have different data within them. Thus, the model may perform better on one dataset than on the other, or vice-versa, which is why the numbers/values for the accuracy differ from one another.
+
+
+
+
+
+
+
+
 
 
 

@@ -53,7 +53,7 @@ set.seed(69)
 
 
 #spliitting the dataset into two for a training and a test set.
-dataset_split <- initial_split(dataset, prop = 0.80, strata = G3)
+dataset_split <- initial_split(dataset, prop = 0.70, strata = G3)
 
 #creating the training and testing sets.
 dataset_train <- training(dataset_split)
@@ -270,8 +270,164 @@ multi_metric <- metric_set(accuracy, sensitivity, specificity)
 augment(log_fit, new_data = dataset3_test) %>%
   multi_metric(truth = G3, estimate = .pred_class)
 ```
-It looks like we have 73.13 accuracy, which is still pretty decent! 
+It looks like we have 61.76 accuracy, which is somewhat good, although not great. We then want to see how the other types of models we learned in class perform. We use the LDA, QDA, and Naive Bayes Models on the training data and check their accuracies. 
+```{r}
+#LDA WORK.
+lda_mod <- discrim_linear() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
 
+#We then define the workflow and add the recipe.
+lda_wkflow <- workflow() %>% 
+  add_model(lda_mod) %>% 
+  add_recipe(recipe3)
+
+#We then fit the data on the training data.
+lda_fit <- fit(lda_wkflow, dataset3_train)
+
+#getting the accuracy
+lda_acc <- augment(lda_fit, new_data = dataset3_train) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+#QDA WORK.
+#Defining the model for QDA.
+qda_mod <- discrim_quad() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+#Creating the workflow and adding the recipe.
+qda_wkflow <- workflow() %>% 
+  add_model(qda_mod) %>% 
+  add_recipe(recipe3)
+
+#Fitting the model.
+qda_fit <- fit(qda_wkflow, dataset3_train)
+
+qda_acc <- augment(qda_fit, new_data = dataset3_train) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+#NAIVE BAYES WORK.
+#We fit the naive Bayes model as asked of us.
+nb_mod <- naive_Bayes() %>% 
+  set_mode("classification") %>% 
+  set_engine("klaR") %>% 
+  set_args(usekernel = FALSE) 
+
+#We create the workflow, and add our recipe into it.
+nb_wkflow <- workflow() %>% 
+  add_model(nb_mod) %>% 
+  add_recipe(recipe3)
+
+#We then fit our model on the training dataset.
+nb_fit <- fit(nb_wkflow, dataset3_train)
+
+#Getting the Naive Bayes accuracy.
+nb_acc <- augment(nb_fit, new_data = dataset3_train) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+#Getting the accuracy for logistic regression.
+#log_reg_acc <- augment(log_fit, new_data = dataset3_train) %>%
+#  accuracy(truth = G3, estimate = .pred_class)
+
+
+#Putting all of the accuracies together.
+accuracies <- c(log_reg_acc$.estimate, lda_acc$.estimate, 
+                nb_acc$.estimate, qda_acc$.estimate)
+
+#Putting all of the model names together.
+models <- c("Logistic Regression", "LDA", "Naive Bayes", "QDA")
+
+#Combining the two lists into one tibble.
+results <- tibble(accuracies = accuracies, models = models)
+
+#Printing out the results and arranging them nicely. 
+results %>% 
+  arrange(-accuracies)
+```
+Looking at this, we can see that on the training data, QDA seems to be performing the best, at a whopping 92.73 percent. Logistic Regression, LDA, and Naive Bayes all seem to be performing very closely to one another, ranging from 76.47 percent to 73.66 percent to 71.62 percent, respectively. However, this is all on the training data. Let us see how they perform on the testing data.
+```{r}
+#ISSUE CURRENTLY: CANNOT DO THIS ON TRAINING DATA BECAUSE ITS TOO SMALL?
+
+
+
+
+#LDA WORK.
+lda_mod <- discrim_linear() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+#We then define the workflow and add the recipe.
+lda_wkflow <- workflow() %>% 
+  add_model(lda_mod) %>% 
+  add_recipe(recipe3)
+
+#We then fit the data on the training data.
+lda_fit <- fit(lda_wkflow, dataset3_test)
+
+#getting the accuracy
+lda_acc <- augment(lda_fit, new_data = dataset3_test) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+#QDA WORK.
+#Defining the model for QDA.
+qda_mod <- discrim_quad() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+#Creating the workflow and adding the recipe.
+qda_wkflow <- workflow() %>% 
+  add_model(qda_mod) %>% 
+  add_recipe(recipe3)
+
+#Fitting the model.
+qda_fit <- fit(qda_wkflow, dataset3_test)
+
+qda_acc <- augment(qda_fit, new_data = dataset3_test) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+#NAIVE BAYES WORK.
+#We fit the naive Bayes model as asked of us.
+nb_mod <- naive_Bayes() %>% 
+  set_mode("classification") %>% 
+  set_engine("klaR") %>% 
+  set_args(usekernel = FALSE) 
+
+#We create the workflow, and add our recipe into it.
+nb_wkflow <- workflow() %>% 
+  add_model(nb_mod) %>% 
+  add_recipe(recipe3)
+
+#We then fit our model on the training dataset.
+nb_fit <- fit(nb_wkflow, dataset3_test)
+
+#Getting the Naive Bayes accuracy.
+nb_acc <- augment(nb_fit, new_data = dataset3_test) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+
+#fit the logistic model according to our testing set.
+log_fit <- fit(log_wkflow, dataset3_test)
+
+#Getting the accuracy for logistic regression.
+log_reg_acc <- augment(log_fit, new_data = dataset3_test) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+
+
+#Putting all of the accuracies together.
+accuracies <- c(log_reg_acc$.estimate, lda_acc$.estimate, 
+                nb_acc$.estimate, qda_acc$.estimate)
+
+#Putting all of the model names together.
+models <- c("Logistic Regression", "LDA", "Naive Bayes", "QDA")
+
+#Combining the two lists into one tibble.
+results <- tibble(accuracies = accuracies, models = models)
+
+#Printing out the results and arranging them nicely. 
+results %>% 
+  arrange(-accuracies)
+```
+We can see that all of our methods seem to perform quite a bit worse on the testing data, as opposed to the training data. Suprisingly, we see that Naive Bayes seems to perform the best, with a 70.58 percent, which is quite close to the 71.62 percent it reached on the training data. On the other hand, all the other methods are performing about 10 percent worse, with the exception of QDA, which is performing about 25 percent worse. Finally, while accuracy is a decent indicator of the performance of a model, we can also use the ROC curve to determine if a model is performing well or not. 
 
 
 
