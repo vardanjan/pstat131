@@ -2,11 +2,14 @@
 title: "Homework 3 Submission"
 author: "Vardan Martirosyan"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 
@@ -21,6 +24,10 @@ library(tidyverse)
 library(tidymodels)
 library(ggplot2)
 library(corrplot)
+library(MASS)
+library(klaR)
+library(discrim)
+tidymodels_prefer()
 ```
 
 We also are told that 'survived' and 'pclass' should be changed to factors, and that when changing 'survived' to a factor, to reorder the factor so that 'Yes' is the first factor. We do this as follows:
@@ -145,8 +152,7 @@ log_wkflow <- workflow() %>%
 log_fit <- fit(log_wkflow, dataset_train)
 
 #We then tidy the data and assign it to a variable name.
-glm_tidy <- log_fit %>% 
-  tidy()
+glm_tidy <- log_fit %>% tidy()
 
 #Printing out the tidied data so we can look at it.
 glm_tidy
@@ -157,8 +163,8 @@ We are asked to repeat Question 5, but this time to specify a linear discriminan
 ```{r}
 #First, we define the LDA model using 'MASS'.
 lda_mod <- discrim_linear() %>% 
-  set_mode("classification") %>% 
-  set_engine("MASS")
+  set_engine("MASS") %>%
+  set_mode("classification") 
 
 #We then define the workflow and add the recipe.
 lda_wkflow <- workflow() %>% 
@@ -235,8 +241,8 @@ model_predictions <- bind_cols(dataset_train %>% select(survived), log_prb_pred,
 #Renaming the column names so they make more sense.
 colnames(model_predictions) <- c('Truth', 'LOG', 'LDA', 'QDA', 'NB')
 
-#Printing out the dataframe for us to view.
-model_predictions
+#Printing out the first few rows of the dataframe for us to view.
+head(model_predictions)
 ```
 
 Thus, we have used predict() and bind_cols() to generate predictions using each of these four models and our training data. We then turn to the accuracy metric portion of the question.
