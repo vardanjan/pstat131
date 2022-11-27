@@ -2,60 +2,73 @@
 title: "Analyzing Final Scores in a Math Class"
 author: "Vardan Martirosyan"
 date: "`r Sys.Date()`"
-output: html_document:
+output:
+  html_document:
     code_folding: hide
 
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 
-\section*{Introduction}
-In this paper, we will be analyzing the "Math Students" dataset, obtained from Kaggle.com. In particular, the dataset comes from the UCI dataset repository, and contains information about the final scores of students at the conclusion of a math program, with many additional variables regarding the students themselves (such as their previous academic performances, characteristics, information about their parents, etc). The goal of the paper is to predict student's final grades using the information given in the dataset. More specifically, our goal is to predict if a student's grade is below 50 percent, or above 50 percent, at the end of the class. 
+# Introduction
+In this paper, we will be analyzing the "Math Students" dataset, obtained from Kaggle.com. In particular, the dataset comes from the UCI dataset repository, and contains information about the final scores of students at the conclusion of a math program, with many additional variables regarding the students themselves (such as their previous academic performances, characteristics, information about their parents, etc). The goal of this paper is to predict student's final grades using the information given in the dataset. More specifically, our goal is to predict if a student's grade is considered passing (ie, below 70 percent or equal to/above 70 percent) at the end of the class.
 
 This model could have several uses in the future. One use is as follows: it could be used to predict the grades of incoming students into the math class based on the student's prior characteristics, and identify students who may need additional help in the class. This would lead to students who might normally not perform as well in the class to getting additional help, which could help them perform better in the class. Another use is as follows. The people surrounding students (such as teachers, parents, etc.) could look at which variables in the dataset seem to influence student's performances the most. If these variables are within the teachers and parents control, they could try to influence these variables ahead of time to improve the performance of their students in the class. These are just some uses that the model could have in the future. 
 
 
-\section*{Loading Packages and Data}
+# Loading Packages and Data
 First, we need to load in the packages and data that we plan on using. As mentioned above, we obtained our data from Kaggle. The link to this dataest is as follows: https://www.kaggle.com/datasets/janiobachmann/math-students
 
-We note that the codebook for this paper is contained in the Github repository that was submitted as part of the final submission. We load in the packages and data that we plan on using as follows. Note that the code chunk is folded: all of the code chunks in this paper will be folded, unless otherwise specified beforehand.
+We note that the codebook for this paper is contained in the Github repository that was submitted as part of the final submission. We load in the packages and data that we plan on using as follows. Note that the following code chunk is folded: all of the code chunks in this paper will be folded by default, except for instances where it would be useful for the reader to see the code.
+
 ```{r}
 #Calling all of the libraries that we plan on using.
 library(ggplot2)
 library(tidyverse)
+library(tidytext)
 library(tidymodels)
+library(dplyr)
 library(ISLR)
 require(gridExtra)
 library(cowplot)
+library(discrim)
 
 #Importing the data as a .csv file.
-dataset <- read.csv('/Users/vardan/Desktop/pstat131/Final\ Project/student-mat.csv')
+dataset <- read.csv('/Users/vardan/Desktop/pstat131/Final\ Project/data/student-mat.csv')
+
+#Setting the seed.
+set.seed(69)
 ```
 
 
 
-\section*{Exploratory Data Analysis}
+# Exploratory Data Analysis
 Before starting the main analysis, we want to confirm that there are no missing variables. We check the number of missing values in each variable of the dataset as follows.
+
 ```{r class.source = 'fold-show'}
 #Using sapply to check the number of missing values in each variable of the dataset.
 sapply(dataset, function(x) sum(is.na(x)))
 ```
+
 From this, we verify that there are no missing values in the dataset. Thus, we don't need to deal with missing values in our exploratory data analysis. Additionally, we note that the original dataset contained binary categorical variables, numeric variables, and nominal variables. We choose to transform the nominal variables into numeric variables, so that there are only two variables types in our dataset (which makes not only our analysis, but prediction, a bit easier). We do this transformation below as follows:
-```{r}
+
+```{r class.source = 'fold-show'}
 #Transforming the two nominal variables, Mjob and Fjob, into numeric variables.
 dataset['Mjob'] <- as.numeric(factor(as.matrix(dataset['Mjob'])))
 dataset['Fjob'] <- as.numeric(factor(as.matrix(dataset['Fjob'])))
 ```
+
 Having accomplished this, we can now move on with the main Exploratory Data Analysis. 
 
 
 
 
-\subsection*{Examining the Relationship Between G1, G2, G3}
-First, we want to analyze how the three variables, G1, G2, G3 change over time, as G1 is the grades at the first grading period, G2 is the grades at the second grading period, and G3 is the grades at the final grading period (and the variable we want to predict). We use the grid.arrange() function as follows to compare the three variables side by side and see how grades shift over time. 
+## Examining the Relationship Between G1, G2, G3
+First, we want to analyze how the three variables, G1, G2, G3 change over time, as G1 is the grades at the first grading period, G2 is the grades at the second grading period, and G3 is the grades at the final grading period (and the variable we want to predict). We use the grid.arrange() function as follows to compare the three variables side by side and see how grades shift over time.
+
 ```{r}
 #Creating the histogram plots for the variables G1, G2, G3.
 plot1 <- ggplot(data = dataset, aes(x = G1)) + geom_histogram(color = 'black', fill = 'white', bins = 15) + labs(y = "Number of Students", title = "Grade Period 1 Scores")
@@ -67,11 +80,13 @@ plot3 <- ggplot(data = dataset, aes(x = G3)) + geom_histogram(color = 'black', f
 #Arranging the plots together side-by-side so that they be analyzed together.
 grid.arrange(plot1, plot2, plot3, ncol = 3)
 ```
+
 Looking at these graphs over time, we see an interesting trend. In the first grading period, the distribution of G1 is mostly uniform, but there seems to be quite a lot of students who have low class grades (lower than the mean of 10). In the second grading period, we start to see an uptick in the number of students who have a 0 as a class grade (but the number of students who had a lower class grade than 10 has decreased slightly). In the final grading period, there is an even larger uptick in the number of students who have a class grade of 0, but now there are very few students who have a non-zero class grader that is lower than the mean of 10. Analyzing this, I think that this means the following. As students begin the class, very few students drop the class by the first grading period, even if they are not performing well. However, as the end of the quarter/semester approaches, students who are not performing as well may choose to cut their losses and drop the class. This means that their class grade becomes a 0. Thus, I think that this is the reason why we see so many students who have a score of 0 for G3, their final score in the class: they were the students who dropped the class because they weren't performing well/other outside circumstances.
 
 
-\subsection*{Exploring Numerical Variables vs. G3}
+## Exploring Numerical Variables vs. G3
 Continuing onward with EDA, we now want to see how G3 relates to all of the numerical predictors in our dataset (excluding G1/G2, since they are related to G3). By viewing these scatterplots, we can see if there are any numeric predictors we can exclude based on the information that they (don't) give us. We do this as follows:
+
 ```{r, warning = FALSE, message = FALSE}
 #Creating the plots for the numerical variables against G3.
 plot4 <- ggplot(data = dataset, aes(x = age, y = G3)) + geom_point() + geom_smooth(method=lm)
@@ -109,6 +124,7 @@ grid.arrange(plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11,
              plot12, plot13, plot14, plot15, plot16, plot17, plot18, ncol = 4, 
              nrow = 4, top = "Comparasion of Numeric Predictors with G3")
 ```
+
 Looking at these graphs, we can see some interesting trends. Failures seems to be the variable that is most indicative of a poor G3 result, as it seems that as the number of failures increase, the lower the G3 score is. This makes sense, because if a student has failed classes in the past, it's more likely that they are not a good student, which would then imply that they don't perform well in their other classes. The other variable that seems to be related to a poor G3 score is age. While I am not as sure for the reason why this is, I present my reasoning for why this happens below. Within a grade level, students are all normally around the same age, give or take about one year. Students who are older than around one year of age are normally the students that are held back a year (or two), due to poor grades. This means that students who are older may perform worse academically, which is why G3 decreases as age increases.
 
 On the other hand, we see that there are some variables that seem to be positively related with the variable G3. For example, Medu and Fedu seem to be strong indicators of a students performance, as the higher the education level of a student's parents, the higher the G3 score is. This makes intuitive sense to me for the following reason. Parents who have a higher education level can provide two benefits to their children. One, as a parent's education level goes up, they may emphasize the importance of education to their children, and push them to perform better in school. Additionally, when a child is struggling, it may be more likely that parent's with high education would help their children out with the material at hand. These are some reasons why I think it makes sense that the variables Fedu and Medu are positively correlated with G3. The other variable that seems to have a somewhat strong positive linear relationship with G3 is studytime, which is pretty self explanatory, as spending more time studying has been shown in the past to improve your grades.
@@ -117,9 +133,10 @@ All of the other variables seem to have a slightly positive, slightly negative, 
 
 
 
-\subsection*{Exploring Binary Categorical Variables vs. G3}
+## Exploring Binary Categorical Variables vs. G3
 We then want to finish our exploratory data analysis by looking at the relationship between the binary categorical variables and G3. To do this, we will utilize box plots. We create these plots as follows:
-```{r, fig.width = 5, fig.height=5}
+
+```{r}
 #Creating the plots for the binary categorical variables against G3.
 plot19 <- ggplot(data = dataset, aes(x = G3, y = school, fill = school)) + geom_boxplot(varwidth = TRUE)
 
@@ -152,15 +169,18 @@ grid.arrange(plot19, plot20, plot21, plot22, plot23, plot24, plot25, plot26,
              plot27, plot28, plot29, plot30, plot31, ncol = 3, nrow = 5,
              top = "Comparasion of Binary Categorical Predictors with G3")
 ```
+
 Looking at these box plots, we can see that there is a diverse range of positive, neutral, and negative relationships with the outcome variable G3. We begin by discussing box plots that show the binary variable having a positive/negative relationship with G3. 
-* First, we note that the address variable (ie, if the student lives in a Rural or Urban area) seems to indicate G3 well. In particular, it seems that students who live in Urban areas perform much better on average than students who live in Rural areas. This makes sense, since students who live in urban areas may have more access to resources and academic help than rural students most of the time. 
-* Additionally, we see that the variable higher is also another strong indicator of the a student's G3 value. More specifically, if a student is interested in pursuing higher education, they are much more likely to have a G3 value in the range of 8 to 14, while if they are not interested in pursuing higher education, they are likely to have a G3 value in the range of 0 to 10. This indicates that being interested in higher education is a particularly important variable to determine a student's G3 grade. 
-* Finally, a somewhat strong indicator of a student's performance is their access to internet. Students who do have acccess to internet perform better on average thatn students who don't. This is pretty reasonable, as if you have access to internet, you have access to resources that can help you better understand material and perform better in classes.
+
+1) First, we note that the address variable (ie, if the student lives in a Rural or Urban area) seems to indicate G3 well. In particular, it seems that students who live in Urban areas perform much better on average than students who live in Rural areas. This makes sense, since students who live in urban areas may have more access to resources and academic help than rural students most of the time. 
+2) Additionally, we see that the variable higher is also another strong indicator of the a student's G3 value. More specifically, if a student is interested in pursuing higher education, they are much more likely to have a G3 value in the range of 8 to 14, while if they are not interested in pursuing higher education, they are likely to have a G3 value in the range of 0 to 10. This indicates that being interested in higher education is a particularly important variable to determine a student's G3 grade. 
+
+3) Finally, a somewhat strong indicator of a student's performance is their access to internet. Students who do have acccess to internet perform better on average thatn students who don't. This is pretty reasonable, as if you have access to internet, you have access to resources that can help you better understand material and perform better in classes.
 
 Based on the plots above, there are also some binary categorical variables that don't seem to have much impact on the results of the outcome variable G3. In particular, they are: famsize, Pstatus, paid, nursery. As a result, we will remove these variables from our final recipe. 
 
 
-\subsection*{Conclusion of EDA}
+## Conclusion of EDA
 Based on the EDA we have performed, we learned quite a few things about our dataset. We saw how the distribution of G3 came to be, by looking at G1 and G2. We learned which variables are most likely to be influential in the prediction of G3 by our graph analysis, and which variables seem to have no impact. Based on all of this, we can now create our recipe, and begin our model fitting.
 
 
@@ -176,26 +196,29 @@ Based on the EDA we have performed, we learned quite a few things about our data
 
 
 
-\section*{Model Fitting}
-\subsection*{Final Data Cleaning and Partitioning}
+# Model Fitting
+## Final Data Cleaning and Partitioning
 Before we can move on directly to model fitting, we need to perform a few final steps. First, we recall that the variable we are attempting to predict, G3, is a numeric variable, ranging from 0 to 20. We choose to transform this variable into a binary categorical variable, with 0 representing a G3 value from 0 to 13, and 1 representing a G3 value from 14 to 20. In other words, we are redefining G3 into a variable that tells us if a student will pass the Math class or not, based on the idea that a 70 percent in most classes is the cutoff for a passing grade.
 
-One reason I chose to do this is as follows. the score that a student can take on in the class is an integer value ranging from 0 to 20. However, when performing classification techniques such as linear regression, we end up with predicted values that are floats, not integers. While we could still check to see how close the predicted float value is to the actual integer value, I felt that classification would be a better approach for this problem (as opposed to regression).
+One reason I chose to do this is as follows. The score that a student can take on in the class is an integer value ranging from 0 to 20. However, when performing classification techniques such as linear regression, we end up with predicted values that are floats, not integers. While we could still check to see how close the predicted float value is to the actual integer value, I felt that classification would be a better approach for this problem (as opposed to regression).
 
-In the code below, we remove all of the variables we decided to not include from the EDA section, and transform the variable G3 into a categorical variable. 
-```{r}
+In the code below, we remove all of the variables we decided to not include from the EDA section, and transform the variable G3 into a categorical variable.
+
+```{r class.source = 'fold-show'}
 #First, we remove the variables discussed above from dataset.
+
 dataset <- dataset %>% 
-  select(-c(G1,G2, Dalc, Walc, freetime, health, absences,
-            famsize, Pstatus, paid, nursery))
+  dplyr::select(-c(G1, G2, Dalc, Walc, freetime, health, absences, famsize, Pstatus, paid, nursery))
 
 #Then, we turn the G3 variable into a categorical variable based on the discussion above.
 dataset$G3 <- cut(dataset$G3,
-                       breaks=c(0, 13, 20),
+                       breaks=c(-1, 13, 21),
                        labels=c(0, 1))
 ```
+
 Having done this, we now want to split our dataset into a training and testing partition. Additionally, we want to fold our training data, so that we can perform cross validation on it to determine the optimal method when fitting our methods. We do this as follows:
-```{r}
+
+```{r class.source = 'fold-show'}
 #splitting the dataset into two for a training and a test set.
 dataset_split <- initial_split(dataset, prop = 0.70, strata = G3)
 
@@ -207,8 +230,10 @@ dataset_test <- testing(dataset_split)
 dataset_folds <- vfold_cv(dataset_train, v = 10)
 ```
 
-\subsection*{Recipe Creation}
+
+## Recipe Creation
 We now want to create our recipe, which is done below as follows:
+
 ```{r class.source = 'fold-show'}
 #Creating the Recipe.
 recipe <-
@@ -219,21 +244,19 @@ recipe <-
   #Creating Dummy Variables for all of the Nominal Predictors.
   step_dummy(all_nominal_predictors()) %>%
   
-  #Normalizing all of the predictor values.
-  step_normalize(all_predictors()) %>%
-  
-  #Centering all of the predictor values.
-  step_center(all_predictors())
+  #Normalizing (Centering and Scaling) all of the predictor values.
+  step_normalize(all_predictors())
 ```
+
 Now that we have our recipe, we can start to fit our models on the folded data!
 
 
-\subsection*{Model Fitting}
-\subsection*{Logistic Regression and Linear Discriminant Analysis}
-I chose to first fit Logistic Regression and Linear Discriminant Analysis. My reasoning for this was as follows: these were the two of the four original models we started to work with in the class, and seemed to be good baselines that we could use for all of the other models we fit. (Note: I also wanted to include QDA and Naive Bayes, but was unable to, due to the models failing when running them on my folded data. This can be explained by the fact that the folds of data do not contain enough observations for QDA and Naive Bayes to be run successfuly). 
+## Logistic Regression and Linear Discriminant Analysis
+I chose to first fit Logistic Regression and Linear Discriminant Analysis. My reasoning for this was as follows: these were the two of the four original models we started to work with in the class, and seemed to be good baselines that we could use for all of the other models we fit. (Note: I also wanted to include QDA and Naive Bayes, but was unable to, due to the models failing when running them on my folded data. This can be explained by the fact that the folds of data do not contain enough observations for QDA and Naive Bayes to be run successfully). 
 
 For Logistic Regression and Linear Discriminant Analysis, we create the classification object, create the workflow, then fit the model to the folded data. This can be seen below in the code as follows:
-```{r}
+
+```{r class.source = 'fold-show', warning = FALSE, message = FALSE}
 #LOGISTIC REGRESSION
 #Creating the logistic regression object.
 log_reg <- logistic_reg() %>% 
@@ -265,17 +288,168 @@ fit2 <- fit_resamples(lda_wkflow, dataset_folds)
 ```
 
 
+## Pruned Decision Tree
+Next, we will try out a pruned decision tree. To do this, we create the classification object, create the workflow, specify the hyper parameters, create a parameter grid, tune the model and fit the model to the folded data. This can be seen below in the code as follows:
 
-\section*{Analyzing the Models}
-Having created several different models, we then can check their performance by collecting their metrics.
-```{r}
-collect_metrics(fit1)
-collect_metrics(fit2)
+```{r class.source = 'fold-show'}
+#Creating the spec.
+tree_spec <- decision_tree() %>%
+  set_engine("rpart")
+
+#this is a classification problem, so we want to use a classification tree.
+class_tree_spec <- tree_spec %>%
+  set_mode("classification")
+
+#adding the hyperparameter specification.
+class_tree_wf <- workflow() %>%
+  add_model(class_tree_spec %>% set_args(cost_complexity = tune())) %>%
+  add_recipe(recipe)
+
+#creating the grid range as specified
+param_grid <- grid_regular(cost_complexity(range = c(-3, -1)),
+                           levels = 10)
+
+#using tune_grid, and specifying we want roc_auc.
+tune_res <- tune_grid(
+  class_tree_wf, 
+  resamples = dataset_folds, 
+  grid = param_grid, 
+  metrics = metric_set(roc_auc)
+)
 ```
-From this, we can see that Logistic Regression performs better than all the other models. Thus, we will fit it to the training data, then use that model on the testing dataset we set aside. 
 
 
 
+
+## Random Forest Model
+We then want to implement a Random Forest model, tuning several hyper parameters (such as mtry, trees, and min_n). We use the "ranger" class, along with importance = "impurity", and set the mode to classification, since the goal is to build a classification tree for the variable G3. In the code below, we follow a similar pattern to what we did for the pruned tree model above, where we create the classification object, create the workflow, specify the hyper parameters, create a parameter grid, tune the model and fit the model to the folded data. This can be seen below in the code as follows:
+
+```{r class.source = 'fold-show'}
+#setting up the random forest model.
+rf_spec <- rand_forest() %>%
+  set_engine("ranger", importance = "impurity") %>%
+  set_mode("classification")
+
+#creating the workflow as described above.
+class_tree_wf_rf <- workflow() %>%
+  add_model(rf_spec %>%
+              set_args(mtry = tune(),
+                       trees = tune(),
+                       min_n = tune())) %>%
+  add_recipe(recipe, blueprint = hardhat::default_recipe_blueprint(allow_novel_levels = TRUE))
+
+
+#creating a parameter grid so that we can use tune_grid() on the hyperparameters we want to tune.
+param_grid2 <- grid_regular(mtry(range = c(1, 22)),
+                            trees(range = c(1,256)),
+                            min_n(range = c(2,20)),
+                            levels = 4)
+
+#using tune_grid, and specifying we want roc_auc.
+tune_res2 <- tune_grid(
+  class_tree_wf_rf, 
+  resamples = dataset_folds, 
+  grid = param_grid2, 
+  metrics = metric_set(roc_auc)
+)
+```
+
+
+
+
+## Boosted Tree Model
+Finally, we fit a boosted tree model. To do this, we create the classification object, create the workflow, specify the hyper parameters, create a parameter grid, tune the model and fit the model to the folded data. This can be seen below in the code as follows:
+
+```{r class.source = 'fold-show'}
+#setting up the random forest model.
+boost_spec <- boost_tree() %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+#creating the workflow. note that we are tuning the number of trees.
+class_tree_wf_boost <- workflow() %>%
+  add_model(boost_spec %>% 
+              set_args(trees=tune())) %>%
+  add_recipe(recipe)
+
+#creating a parameter grid to determine the optimal number of trees.
+param_grid3 <- grid_regular(trees(range = c(10, 2000)),
+                            levels = 10)
+
+#using tune_grid() to find the optimal number of trees.
+tune_res3 <- tune_grid(
+  class_tree_wf_boost, 
+  resamples = dataset_folds, 
+  grid = param_grid3, 
+  metrics = metric_set(roc_auc)
+)
+```
+
+
+
+# Analyzing/Comparing the Models and Finalizing the Best Model
+Having created several different models, we then can check their performance by collecting their metrics.
+
+```{r class.source = 'fold-show'}
+#Logistic Regression Result
+log_reg_val <- collect_metrics(fit1) %>% 
+  filter(.metric == 'roc_auc') %>%
+  add_column(name = "Logistic Regression")
+
+#Linear Discrimination Analysis Result
+lin_discrim_val <- collect_metrics(fit2) %>%
+  filter(.metric == 'roc_auc') %>%
+  add_column(name = "LDA")
+
+#Pruned Classification Tree Result
+tree1 <- tail(collect_metrics(tune_res) %>% arrange(mean), n = 1) %>%
+  add_column(name = "Pruned Classification Tree")
+
+#Random Forest Model Result
+tree2 <- tail(collect_metrics(tune_res2) %>% arrange(mean), n = 1) %>%
+  add_column(name = "Random Forest")
+
+#Boosted Tree Model
+tree3 <- tail(collect_metrics(tune_res3) %>% arrange(mean), n = 1) %>%
+  add_column(name = "Boosted Tree")
+
+#creating one big table to organize all of them.
+table <- full_join(log_reg_val, lin_discrim_val)
+table <- full_join(table, tree1)
+table <- full_join(table, tree2)
+table <- full_join(table, tree3)
+
+#getting the name of the model, it's mean ROC_AUC, and the standard error.
+table <- table %>% dplyr::select(name, mean, std_err)
+
+#printing out the table.
+table %>% arrange(mean)
+```
+
+From this, we can see that the Random Forest performs better than all the other models by the roc_auc metric. Thus, we will select the best parameters from the random forest model, finalize our workflow, fit the data onto the training dataset, and check the accuracy of the model on the testing dataset.
+
+```{r class.source = 'fold-show'}
+#setting our seed again for consistency.
+set.seed(2)
+
+#getting our best performing random forest model.
+best_complexity <- select_best(tune_res2, metric = "roc_auc")
+
+#finalizing the workflow.
+rf_final <- finalize_workflow(class_tree_wf_rf, best_complexity)
+
+#fitting the testing data onto the model.
+rf_final_fit <- fit(rf_final, data = dataset_train)
+
+#using augment() to get the roc_auc value on the test dataset.
+augment(rf_final_fit, new_data = dataset_test) %>%
+  accuracy(truth = G3, estimate = .pred_class)
+```
+
+# Conclusion and Future Work
+Based on our work above, we saw that the Random Forest model performed the best on our folded data. As a result, we chose to move forward with the Random Forest model, and fit it to our unfolded training data. Afterwards, we then fit the model onto our testing data to see it's performance. As can be seen directly above, we see that the Random Forest model classified about 75 percent of the observations in our testing set correctly. In my opinion, this is a somewhat decent result. On the one hand, it is definitely better than a coin flip in terms of prediction accuracy. On the other hand, it's not that great: getting an 80 percent accuracy on the testing dataset would have been desirable.
+
+Overall, I am happy with my work. I performed a lot of exploratory data analysis, fit five unique models, and was able to get a somewhat decent result of predicting whether or not a student passed their math class or not. For future work, I think that it would be worth doing a multiclass prediction problem: instead of splitting up G3 into a binary variable (where 0 represented not passing the class and 1 represented passing the class), it might be worth creating three possible values that G3 could take on: 0 representing getting a 0 in the class, 1 representing getting a 1-13 in the class, and 2 representing getting a 14-20 in the class. By doing this, we could maybe alleviate some of the issues that crop up due to the high number of 0 values present in the G3 variable. Other future work could include implementing different classification models (such as SVM, Neural Networks, etc), to see if those perform better with the data set.
 
 
 

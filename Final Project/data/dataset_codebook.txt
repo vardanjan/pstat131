@@ -1,0 +1,106 @@
+This is a codebook for all of the variables in the 'Math Students' dataset. I have used the codebook that was associated with the original Kaggle dataset as a reference, but rewritten all of the explanations for the variables to be more clear. The variable types and what they are labelled as in the dataset are also present, since those are relevant for our purposes.
+
+DATA CITATION: https://www.kaggle.com/datasets/janiobachmann/math-students
+
+
+
+START OF CODEBOOK:
+
+school:
+the school that the student attends (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
+
+sex:
+the student's sex (binary: 'F' - female or 'M' - male)
+
+age:
+the student's age (numeric: from 15 to 22)
+
+address:
+the student's home address type (binary: 'U' - urban or 'R' - rural)
+
+famsize:
+size of the student's family (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
+
+Pstatus:
+the student's parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
+
+Medu:
+mother's education level (numeric: 0 - none, 1 - primary education (4th grade), 2 - (5th to 9th grade), 3 - secondary education or 4 - higher education)
+
+Fedu:
+father's education level (numeric: 0 - none, 1 - primary education (4th grade), 2 - (5th to 9th grade), 3 - secondary education or 4 - higher education)
+
+Mjob:
+mother's job type (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'athome' or 'other')
+
+Fjob:
+father's job type (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'athome' or 'other')
+
+reason:
+reason that student chose the school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
+
+guardian:
+student's guardian (nominal: 'mother', 'father' or 'other')
+
+traveltime:
+the home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
+
+studytime:
+weekly study time spent by student (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
+
+failures:
+number of past class failures by student (numeric: n if 1<=n<3, else 4)
+
+schoolsup:
+extra educational support (binary: yes or no)
+
+famsup:
+family educational support (binary: yes or no)
+
+paid:
+extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
+
+activities:
+participant in extra-curricular activities (binary: yes or no)
+
+nursery:
+attended nursery school (binary: yes or no)
+
+higher:
+student wants to take higher education (binary: yes or no)
+
+internet:
+Internet access available at home (binary: yes or no)
+
+romantic:
+is student in a romantic relationship (binary: yes or no)
+
+famrel:
+student's quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
+
+freetime:
+amount of free time after school (numeric: from 1 - very low to 5 - very high)
+
+goout:
+how regularly student goes out with friends (numeric: from 1 - very low to 5 - very high)
+
+Dalc:
+average workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
+
+Walc:
+average weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
+
+health:
+student's current health status (numeric: from 1 - very bad to 5 - very good)
+
+absences:
+student's number of school absences (numeric: from 0 to 93)
+
+G1:
+first period grade (numeric: from 0 to 20)
+
+G2:
+second period grade (numeric: from 0 to 20)
+
+G3:
+final grade (numeric: from 0 to 20)

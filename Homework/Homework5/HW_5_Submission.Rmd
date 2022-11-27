@@ -1,0 +1,214 @@
+---
+title: "HW5 Submission"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We first load in some key packages before starting.
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(ggplot2)
+library(corrplot)
+library(MASS)
+library(klaR)
+library(discrim)
+tidymodels_prefer()
+```
+
+
+
+
+
+
+\section*{Question 1}
+We are asked to install and load the janitor package. I installed it already, so I just need to load it in.
+```{r}
+library(janitor)
+```
+Then, we are asked to use clean_names() on the Pokemon data, and to save the results to work with for the rest of the assignment. We do this as follows:
+```{r}
+#First, we load in the data.
+dataset <- read.csv("/Users/vardan/Desktop/pstat131/Homework/Homework5/data/Pokemon.csv")
+
+#Then, we apply clean_names() to the dataset.
+dataset <- clean_names(dataset)
+```
+We are asked what happened to the data. When we applied clean_names(), it "cleaned" all of the names of the columns in the dataframe, by turning them to lowercase, and removing periods and replacing them with underscores. This function is useful because it standardizes all of the values in the dataframe to one homogeneous value, so that we don't have to check to see what specific names are being used, and where.
+
+
+\section*{Question 2}
+Using the entire dataset, we are asked to create a bar chart of the outcome variable, type_1. 
+```{r}
+ggplot(dataset, aes(x = type_1)) + geom_histogram(stat = 'count')
+```
+
+
+We see that there are 18 classes of outcome. There are some Pokemon types with very few Pokemon. For example, Flying has almost no pokemon, while Fairy, Ice, Poison, and Steel all have less than 30 Pokemon. 
+
+We then want to filter out all the rare pokemon types, as specified by the problem statement. We do this as follows:
+```{r}
+#filtering out and keeping the common pokemon types.
+dataset <- filter(
+  dataset, 
+  type_1 == 'Bug' | type_1 == 'Fire' | type_1 == 'Grass' |
+    type_1 == 'Normal' | type_1 == 'Water' | type_1 == 'Psychic'
+  )
+```
+After filtering, we are then requested to convert type_1, legendary, and generation into factors. We do this as follows:
+```{r}
+#Changing the factors.
+dataset$type_1 <- as.factor(dataset$type_1)
+dataset$legendary <- as.factor(dataset$legendary)
+dataset$generation <- as.factor(dataset$generation)
+```
+
+
+
+\section*{Question 3}
+We are asked to perform an initial split of the data, and to stratify by the outcome variable. We do this as follows:
+```{r}
+#first, we need to set the seed for reproducibility.
+set.seed(69)
+
+#splitting the dataset.
+dataset_split <- initial_split(dataset, prop = 0.80, strata = type_1)
+
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+```
+We are then asked to verify that our training and test sets have the desired number of observations.
+```{r}
+print(dim(dataset_train))
+print(dim(dataset_test))
+```
+Looking at this, our training and test sets have a desired number of observations.
+
+We are then asked use v-fold cross validation on the training set, with 5 folds, and to stratify the folds by type_1. 
+```{r}
+pokemon_folds <- vfold_cv(dataset_train, v = 5, strata = type_1)
+```
+We are then asked why stratifying the folds might be useful. Stratifying the folds might be useful to ensure that each fold has a good number of observations for each outcome of type_1 within the fold itself.
+
+
+\section*{Question 4}
+We are asked to set up a recipe to predict type_1 with legendary, generation, sp_atk, attack, speed, defense, hp, and sp_def. Additionally, we are asked to dummy code legendary and generation, and to center and scale all predictors. We do this as follows:
+```{r}
+pokemon_recipe <-
+  #Defining the predictors and response variables.
+  recipe(type_1 ~ legendary + generation + sp_atk + attack + speed + defense + hp + sp_def,
+         data = dataset) %>%
+  #creating dummy variables for the desired variables.
+  step_dummy(legendary) %>%
+  step_dummy(generation) %>%
+  #centering and scaling all predictors.
+  step_normalize(all_predictors()) %>%
+  step_center(all_predictors())
+```
+
+
+\section*{Question 5}
+We are asked to set up a model, where we want to fit and tune an elastic net, tuning penalty and mixture (using multinom_reg) with the glmnet engine. We are asked to create a regular grid for penalty and mixture with 10 levels each, with mixture ranging from 0 to 1, and penalty ranging from -5 to 5. We do all of this as follows:
+```{r}
+#creating the ridge specification.
+ridge_spec <- 
+  multinom_reg(mode = "classification", engine = "glmnet", penalty = tune(), mixture = tune()) 
+
+#creating the workflow and adding our spec model into it.
+ridge_workflow <- workflow() %>% 
+  add_recipe(pokemon_recipe) %>% 
+  add_model(ridge_spec)
+
+#creating the specified regular grids.
+penalty_mixture_grid <- grid_regular(penalty(range = c(-5, 5)), mixture(range = c(0,1)), levels = 10)
+```
+We are asked how many total models we will be fitting when we fit these models to our folded data. Since we have 10 levels each on mixture and penalty, and we have 5 folds, we will be fitting 500 models.
+
+
+\section*{Question 6}
+We are now asked to fit our models to our folded data using tune_grid(). We do this as follows:
+```{r}
+#using tune_res as desired.
+tune_res_mixture <- tune_grid(
+  ridge_workflow,
+  resamples = pokemon_folds, 
+  grid = penalty_mixture_grid
+)
+```
+We are then asked to use autoplot to view our results.
+```{r}
+autoplot (tune_res_mixture)
+```
+
+
+We are asked to comment on what we notice. I notice that for accuracy, all of proportion lines (except for 0.0000 and 0.1111111) are very similar to one another, while the lines with proportion 0.00000 and 0.111111 are very similar to one another. For roc_auc, I see that having a 0.00000 proportion of lasso penalty leads to a larger roc_auc value when the amount of regularization increases. As the proportions increase, the roc_auc value decreases sooner when the amount of regularization increases. 
+
+We are asked if larger or smaller values of penalty and mixture produce better accuracy and ROC AUC. We see from the graphs above that smaller amounts of penalty and mixture produce better accuracy and ROC AUC.
+
+
+\section*{Question 7}
+We are asked to use select_best() to choose the model that has the optimal roc_auc. We do this as follows:
+```{r}
+best_penalty <- select_best(tune_res_mixture, metric = "roc_auc")
+```
+Then, we are asked to use finalize_workflow(), fit(), and augment() to fit the model to the training set and evaluate its performance on the testing set. We do this as follows:
+```{r}
+ridge_final <- finalize_workflow(ridge_workflow, best_penalty)
+
+ridge_final_fit <- fit(ridge_final, data = dataset_train)
+
+augment(ridge_final_fit, new_data = dataset_test) %>%
+  accuracy(truth = type_1, estimate = .pred_class)
+```
+We see that the accuracy/performance of the model on the testing dataset is around 40.43 percent.
+
+
+\section*{Question 8}
+We are asked to calculate the overall ROC AUC on the testing set. We do this as follows:
+```{r}
+augment(ridge_final_fit, new_data = dataset_test) %>%
+  roc_auc(truth = type_1, estimate = c(.pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal,
+                                       .pred_Psychic, .pred_Water))
+```
+We see that the overall accuracy is about 75.01 percent. Then, we are asked to create plots of the different ROC curves, one per level of outcome. We do this as follows:
+```{r}
+augment(ridge_final_fit, new_data = dataset_test) %>%
+  roc_curve(type_1, c(.pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal,
+                      .pred_Psychic, .pred_Water)) %>%
+  autoplot()
+```
+
+
+We are then asked to make a heatmap of the confusion matrix. We do this as follows:
+```{r}
+#Creating the confusion matrix.
+augment(ridge_final_fit, new_data = dataset_test) %>%
+  conf_mat(truth = type_1, estimate = .pred_class) %>%
+  autoplot(type = "heatmap")
+```
+
+
+We are asked to describe what we notice. We are first asked how our model performed. Looking at the overall ROC AUC on the testing set, we obtained about a 75 percent, which in my opinion is pretty decent. Looking at the ROC curves, we see that the Normal and Psychic curves seem to have a higher area under them as opposed to the other graphs.
+
+Our model seems to be very good at predicting Normal type and Psychic type Pokemon, but not much else. In particular, it seems to be very bad at predicting Fire, Grass, and Water Pokemon. One reason this might be is as follows. Fire, Grass, and Water Pokemon have a pretty wide range of different characteristics they could have, which is why the model didn't perform as well on them. Normal Pokemon, on the other hand, are pretty boring, and share more characteristics with one another as opposed to the other types, thus making the predictors stronger for the Normal type pokemon. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

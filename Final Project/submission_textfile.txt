@@ -1,0 +1,9 @@
+VARDAN MARTIROSYAN
+PSTAT 131 FALL 2022
+FINAL PROJECT SUBMISSION TEXT FILE
+
+This is Vardan Martirosyan's submission file for the Final Project. Below is the link to the github repository used, where my .Rmd file, along with the .html file, data, and all other requested items can be found. Below that is my data citation, where there is a link to the dataset I used.
+
+Link to Github Repository: https://github.com/vardanjan/pstat131/tree/main/Final%20Project
+
+Link to Kaggle Dataset: https://www.kaggle.com/datasets/janiobachmann/math-students
