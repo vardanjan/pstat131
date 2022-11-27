@@ -4,6 +4,7 @@ author: "Vardan Martirosyan"
 date: "`r Sys.Date()`"
 output:
   html_document:
+    toc: true
     code_folding: hide
 
 ---
@@ -30,6 +31,7 @@ library(ggplot2)
 library(tidyverse)
 library(tidytext)
 library(tidymodels)
+library(corrplot)
 library(dplyr)
 library(ISLR)
 require(gridExtra)
@@ -197,7 +199,7 @@ Based on the EDA we have performed, we learned quite a few things about our data
 
 
 # Model Fitting
-## Final Data Cleaning and Partitioning
+## Final Data Cleaning, Data Splitting/Partitioning and Cross Validation
 Before we can move on directly to model fitting, we need to perform a few final steps. First, we recall that the variable we are attempting to predict, G3, is a numeric variable, ranging from 0 to 20. We choose to transform this variable into a binary categorical variable, with 0 representing a G3 value from 0 to 13, and 1 representing a G3 value from 14 to 20. In other words, we are redefining G3 into a variable that tells us if a student will pass the Math class or not, based on the idea that a 70 percent in most classes is the cutoff for a passing grade.
 
 One reason I chose to do this is as follows. The score that a student can take on in the class is an integer value ranging from 0 to 20. However, when performing classification techniques such as linear regression, we end up with predicted values that are floats, not integers. While we could still check to see how close the predicted float value is to the actual integer value, I felt that classification would be a better approach for this problem (as opposed to regression).
@@ -216,7 +218,7 @@ dataset$G3 <- cut(dataset$G3,
                        labels=c(0, 1))
 ```
 
-Having done this, we now want to split our dataset into a training and testing partition. Additionally, we want to fold our training data, so that we can perform cross validation on it to determine the optimal method when fitting our methods. We do this as follows:
+Having done this, we now want to split our dataset into a training and testing partition. Additionally, we want to fold our training data into 10 folds, so that we can perform cross validation on it to determine the optimal model when fitting our models later on. We do this as follows:
 
 ```{r class.source = 'fold-show'}
 #splitting the dataset into two for a training and a test set.
@@ -446,8 +448,22 @@ augment(rf_final_fit, new_data = dataset_test) %>%
   accuracy(truth = G3, estimate = .pred_class)
 ```
 
-# Conclusion and Future Work
-Based on our work above, we saw that the Random Forest model performed the best on our folded data. As a result, we chose to move forward with the Random Forest model, and fit it to our unfolded training data. Afterwards, we then fit the model onto our testing data to see it's performance. As can be seen directly above, we see that the Random Forest model classified about 75 percent of the observations in our testing set correctly. In my opinion, this is a somewhat decent result. On the one hand, it is definitely better than a coin flip in terms of prediction accuracy. On the other hand, it's not that great: getting an 80 percent accuracy on the testing dataset would have been desirable.
+Thus, we can see that the random forest model on the testing dataset is around 75 percent. To visualize this and assess the performance of our model even further, we can take a look at the confusion matrix for G3 on the testing dataset.
+```{r class.source = 'fold-show'}
+#Creating the confusion matrix.
+augment(rf_final_fit, new_data = dataset_test) %>%
+  conf_mat(truth = G3, estimate = .pred_class) %>%
+  autoplot(type = "heatmap")
+```
+
+Looking at the results of this confusion matrix, it seems that the model is very good at predicting failing students correctly, while having a bit of trouble when predicting students as failing, when the students are actually passing the class. In fact, it seems that the model likes to predict most students as failing, when in fact, there is a non-negligible portion of students who pass the class. 
+
+
+
+# Conclusion, Discussion of Results, and Future Work
+Based on our work above, we saw that the Random Forest model performed the best on our folded data. (It should be noted that all of our models performed moderately well on the folded data, with the lowest being the Pruned Classification Tree at 71 percent, and the highest being the Random Forest model at 77 percent). I was not suprised by the Random Forest model performing the best, as we have learned in class (many times) that Random Forest models tend to perform better than other models.
+
+As a result of the Random Forest model performing the best on the folded data, we chose to move forward with the Random Forest model, and fit it to our unfolded training data. Afterwards, we then fit the model onto our testing data to see it's performance. As can be seen directly above, we see that the Random Forest model classified about 75 percent of the observations in our testing set correctly. In my opinion, this is a somewhat decent result. On the one hand, it is definitely better than a coin flip in terms of prediction accuracy. On the other hand, it's not that great: getting an 80 percent accuracy on the testing dataset would have been desirable.
 
 Overall, I am happy with my work. I performed a lot of exploratory data analysis, fit five unique models, and was able to get a somewhat decent result of predicting whether or not a student passed their math class or not. For future work, I think that it would be worth doing a multiclass prediction problem: instead of splitting up G3 into a binary variable (where 0 represented not passing the class and 1 represented passing the class), it might be worth creating three possible values that G3 could take on: 0 representing getting a 0 in the class, 1 representing getting a 1-13 in the class, and 2 representing getting a 14-20 in the class. By doing this, we could maybe alleviate some of the issues that crop up due to the high number of 0 values present in the G3 variable. Other future work could include implementing different classification models (such as SVM, Neural Networks, etc), to see if those perform better with the data set.
 
